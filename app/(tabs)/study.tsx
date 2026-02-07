@@ -35,6 +35,7 @@ export default function StudyScreen() {
     answerRight,
     answerWrong,
     shuffleDeck,
+    stopSession,
     restartDeck,
     tick,
   } = useStudy();
@@ -54,23 +55,16 @@ export default function StudyScreen() {
     };
   }, [state.mode, state.isComplete, tick]);
 
-  // Auto mode timer
-  const handleAutoWordTimeout = useCallback(() => {
+  // Auto mode timer — only auto-reveals, right/wrong is always manual
+  const handleAutoTimeout = useCallback(() => {
     reveal();
     haptics.reveal();
   }, [reveal, haptics]);
 
-  const handleAutoMeaningTimeout = useCallback(() => {
-    // In auto mode, move to next (count as "right" by default)
-    answerRight();
-  }, [answerRight]);
-
   const { remaining: autoRemaining } = useAutoTimer({
-    seconds: active?.seconds ?? 3,
-    isRunning: state.mode === 'auto' && !state.isComplete,
-    onWordTimeout: handleAutoWordTimeout,
-    onMeaningTimeout: handleAutoMeaningTimeout,
-    face: state.cardFace,
+    seconds: active?.seconds ?? 5,
+    isRunning: state.mode === 'auto' && !state.isComplete && state.cardFace === 'word',
+    onTimeout: handleAutoTimeout,
   });
 
   // Load deck when ready
@@ -140,7 +134,7 @@ export default function StudyScreen() {
               >
                 <Ionicons name="timer" size={22} color="#fff" />
                 <Text style={[styles.startBtnText, { fontFamily: 'Inter-Bold' }]}>
-                  Auto ({active?.seconds ?? 3}s)
+                  Auto ({active?.seconds ?? 5}s)
                 </Text>
               </Pressable>
               <Pressable
@@ -235,9 +229,20 @@ export default function StudyScreen() {
               {state.currentIndex + 1} / {state.deck.length}
             </Text>
           </View>
-          <Text style={[styles.timer, { color: colors.textMuted, fontFamily: 'Inter' }]}>
-            {formatTime(state.elapsedMs)}
-          </Text>
+          <View style={styles.headerRight}>
+            <Text style={[styles.timer, { color: colors.textMuted, fontFamily: 'Inter' }]}>
+              {formatTime(state.elapsedMs)}
+            </Text>
+            <Pressable
+              onPress={stopSession}
+              style={[styles.stopBtn, { borderColor: colors.error }]}
+            >
+              <Ionicons name="stop" size={14} color={colors.error} />
+              <Text style={[styles.stopBtnText, { color: colors.error, fontFamily: 'Inter-Medium' }]}>
+                Stop
+              </Text>
+            </Pressable>
+          </View>
         </View>
 
         {/* Progress bar */}
@@ -253,10 +258,10 @@ export default function StudyScreen() {
           />
         </View>
 
-        {/* Auto timer bar */}
-        {state.mode === 'auto' && (
+        {/* Auto timer bar — only shows while counting down to reveal */}
+        {state.mode === 'auto' && state.cardFace === 'word' && (
           <View style={styles.autoTimerContainer}>
-            <AutoTimerBar remaining={autoRemaining} total={active?.seconds ?? 3} />
+            <AutoTimerBar remaining={autoRemaining} total={active?.seconds ?? 5} />
           </View>
         )}
 
@@ -293,7 +298,7 @@ export default function StudyScreen() {
           </Text>
         )}
 
-        {/* Controls (hidden in auto mode when card showing word) */}
+        {/* Controls — in auto mode, hide Reveal (timer handles it), show Right/Wrong after reveal */}
         {state.mode === 'manual' && (
           <StudyControls
             cardFace={state.cardFace}
@@ -304,7 +309,7 @@ export default function StudyScreen() {
         )}
         {state.mode === 'auto' && state.cardFace === 'meaning' && (
           <StudyControls
-            cardFace={state.cardFace}
+            cardFace="meaning"
             onReveal={handleReveal}
             onRight={handleRight}
             onWrong={handleWrong}
@@ -336,7 +341,22 @@ const styles = StyleSheet.create({
   },
   modeBadgeText: { color: '#fff', fontSize: 11, letterSpacing: 0.5 },
   counter: { fontSize: 16 },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   timer: { fontSize: 14 },
+  stopBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1.5,
+  },
+  stopBtnText: { fontSize: 12 },
   progressTrack: {
     height: 3,
     marginHorizontal: spacing.lg,

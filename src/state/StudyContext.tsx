@@ -37,6 +37,7 @@ type StudyAction =
   | { type: 'PREVIOUS' }
   | { type: 'SHUFFLE' }
   | { type: 'TICK'; ms: number }
+  | { type: 'STOP' }
   | { type: 'RESET' }
   | { type: 'DRILL_ERRORS'; deck: FlashWord[] };
 
@@ -127,6 +128,9 @@ function studyReducer(state: StudyState, action: StudyAction): StudyState {
     case 'TICK':
       return { ...state, elapsedMs: state.elapsedMs + action.ms };
 
+    case 'STOP':
+      return { ...state, mode: 'idle' as StudyMode };
+
     case 'RESET':
       return initialState;
 
@@ -156,6 +160,7 @@ interface StudyContextValue {
   next: () => void;
   previous: () => void;
   shuffleDeck: () => void;
+  stopSession: () => void;
   resetSession: () => void;
   drillErrors: () => Promise<void>;
   tick: (ms: number) => void;
@@ -212,7 +217,15 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
   const next = useCallback(() => dispatch({ type: 'NEXT' }), []);
   const previous = useCallback(() => dispatch({ type: 'PREVIOUS' }), []);
   const shuffleDeck = useCallback(() => dispatch({ type: 'SHUFFLE' }), []);
-  const resetSession = useCallback(() => dispatch({ type: 'RESET' }), []);
+  const stopSession = useCallback(() => dispatch({ type: 'STOP' }), []);
+
+  const resetSession = useCallback(async () => {
+    dispatch({ type: 'RESET' });
+    if (wordFilter) {
+      const words = await getFilteredWords(wordFilter);
+      dispatch({ type: 'LOAD_DECK', deck: shuffle(words) });
+    }
+  }, [wordFilter, getFilteredWords]);
   const tick = useCallback((ms: number) => dispatch({ type: 'TICK', ms }), []);
 
   const restartDeck = useCallback(() => {
@@ -241,6 +254,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         next,
         previous,
         shuffleDeck,
+        stopSession,
         resetSession,
         drillErrors,
         tick,

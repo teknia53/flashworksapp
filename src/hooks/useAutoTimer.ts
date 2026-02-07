@@ -1,43 +1,38 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UseAutoTimerOptions {
   seconds: number;
   isRunning: boolean;
-  onWordTimeout: () => void;
-  onMeaningTimeout: () => void;
-  face: 'word' | 'meaning';
+  onTimeout: () => void;
 }
 
 export function useAutoTimer({
   seconds,
   isRunning,
-  onWordTimeout,
-  onMeaningTimeout,
-  face,
+  onTimeout,
 }: UseAutoTimerOptions) {
   const [remaining, setRemaining] = useState(seconds);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timeoutRef = useRef(onTimeout);
+  timeoutRef.current = onTimeout;
 
-  // Reset remaining when face changes or seconds change
+  // Reset when seconds setting changes
   useEffect(() => {
     setRemaining(seconds);
-  }, [face, seconds]);
+  }, [seconds]);
 
   useEffect(() => {
     if (!isRunning) {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      setRemaining(seconds);
       return;
     }
 
     intervalRef.current = setInterval(() => {
       setRemaining((prev) => {
         if (prev <= 1) {
-          if (face === 'word') {
-            onWordTimeout();
-          } else {
-            onMeaningTimeout();
-          }
-          return seconds; // Reset for next phase
+          timeoutRef.current();
+          return seconds; // Reset for next card
         }
         return prev - 1;
       });
@@ -46,7 +41,7 @@ export function useAutoTimer({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, face, seconds, onWordTimeout, onMeaningTimeout]);
+  }, [isRunning, seconds]);
 
   return { remaining };
 }
