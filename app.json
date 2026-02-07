@@ -35,7 +35,9 @@
       [
         "expo-asset",
         {
-          "assets": ["./assets/databases/FlashWorks.sqlite"]
+          "assets": [
+            "./assets/databases/FlashWorks.sqlite"
+          ]
         }
       ]
     ],
@@ -47,8 +49,10 @@
     },
     "extra": {
       "eas": {
-        "projectId": ""
-      }
-    }
+        "projectId": "f55a7792-797f-4ce9-a0bf-ea7245e28526"
+      },
+      "router": {}
+    },
+    "owner": "tylermounce"
   }
 }
