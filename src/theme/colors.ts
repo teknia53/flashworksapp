@@ -1,20 +1,21 @@
 export const palette = {
-  navy: '#234488',
-  navyDark: '#122244',
-  navyDeep: '#0A1628',
-  gold: '#C4941A',
-  goldLight: '#F0D47A',
-  success: '#2D8B55',
-  error: '#C93B3B',
+  brown: '#4A2E1F',       // Rich warm brown — primary actions, headers
+  brownDark: '#3A241C',   // Dark brown — matches app icon background
+  brownDeep: '#1E140E',   // Deep espresso — dark mode background
+  gold: '#C4941A',        // Warm gold — accent highlights
+  goldLight: '#F0D47A',   // Light gold — Greek text in dark mode
+  parchment: '#E8D5B5',   // Parchment — warm surface tint
+  success: '#3D8B4A',     // Warm green — correct answers
+  error: '#C04040',       // Red-orange — wrong answers (matches professor robe)
   white: '#FFFFFF',
-  offWhite: '#F7F7F9',
-  gray100: '#F0F0F3',
-  gray200: '#E0E0E5',
-  gray300: '#C0C0C8',
-  gray400: '#8888A0',
-  gray500: '#666680',
-  gray600: '#444460',
-  gray700: '#2A2A40',
+  offWhite: '#FAF7F2',    // Warm off-white — parchment-tinted background
+  gray100: '#F2EDE6',     // Warm grays throughout
+  gray200: '#E2DBD1',
+  gray300: '#C4BAB0',
+  gray400: '#958A80',
+  gray500: '#706560',
+  gray600: '#504540',
+  gray700: '#352E28',
   black: '#000000',
 } as const;
 
@@ -22,46 +23,46 @@ export const lightColors = {
   background: palette.offWhite,
   surface: palette.white,
   surfaceElevated: palette.white,
-  primary: palette.navy,
+  primary: palette.brown,
   primaryText: palette.white,
   accent: palette.gold,
-  text: palette.navyDark,
+  text: palette.brownDark,
   textSecondary: palette.gray500,
   textMuted: palette.gray400,
-  greekText: palette.navyDark,
+  greekText: palette.brownDark,
   meaningText: palette.gray600,
   border: palette.gray200,
   success: palette.success,
   error: palette.error,
   tabBar: palette.white,
   tabBarInactive: palette.gray400,
-  tabBarActive: palette.navy,
-  headerBackground: palette.navy,
+  tabBarActive: palette.brown,
+  headerBackground: palette.brown,
   headerText: palette.white,
-  cardShadow: 'rgba(18, 34, 68, 0.08)',
+  cardShadow: 'rgba(74, 46, 31, 0.10)',
 };
 
 export const darkColors = {
-  background: palette.navyDeep,
-  surface: '#1A2844',
-  surfaceElevated: '#223355',
+  background: palette.brownDeep,
+  surface: '#2A1E16',
+  surfaceElevated: '#362820',
   primary: palette.gold,
-  primaryText: palette.navyDeep,
+  primaryText: palette.brownDeep,
   accent: palette.goldLight,
   text: palette.offWhite,
   textSecondary: palette.gray300,
   textMuted: palette.gray400,
   greekText: palette.goldLight,
   meaningText: palette.gray200,
-  border: '#2A3A5A',
-  success: '#3DA96A',
+  border: '#3E3028',
+  success: '#4DA86A',
   error: '#E05555',
-  tabBar: '#0D1E38',
+  tabBar: '#150E0A',
   tabBarInactive: palette.gray500,
   tabBarActive: palette.goldLight,
-  headerBackground: '#0D1E38',
+  headerBackground: '#150E0A',
   headerText: palette.offWhite,
-  cardShadow: 'rgba(0, 0, 0, 0.3)',
+  cardShadow: 'rgba(0, 0, 0, 0.35)',
 };
 
 export interface ThemeColors {
