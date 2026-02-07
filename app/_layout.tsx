@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { DatabaseProvider } from '@/src/state/DatabaseContext';
 import { PreferencesProvider } from '@/src/state/PreferencesContext';
+import { StudyProvider } from '@/src/state/StudyContext';
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -35,9 +36,11 @@ export default function RootLayout() {
   return (
     <DatabaseProvider>
       <PreferencesProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-        </Stack>
+        <StudyProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+          </Stack>
+        </StudyProvider>
       </PreferencesProvider>
     </DatabaseProvider>
   );
