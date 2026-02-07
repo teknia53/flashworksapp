@@ -1,18 +1,14 @@
 import * as SQLite from 'expo-sqlite';
-import { File, Paths, Directory } from 'expo-file-system/next';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Asset } from 'expo-asset';
 
 const DB_NAME = 'FlashWorks.sqlite';
 
+// expo-sqlite default directory
+const SQL_DIR = FileSystem.documentDirectory + 'SQLite/';
+const DB_PATH = SQL_DIR + DB_NAME;
+
 let dbInstance: SQLite.SQLiteDatabase | null = null;
-
-function getDbDir(): Directory {
-  return new Directory(Paths.document, 'databases');
-}
-
-function getDbPath(): string {
-  return getDbDir().uri + '/' + DB_NAME;
-}
 
 /**
  * Ensures the database file exists in the writable document directory.
@@ -20,13 +16,17 @@ function getDbPath(): string {
  * use the existing copy (preserving difficulty updates).
  */
 async function ensureDatabase(): Promise<void> {
-  const dir = getDbDir();
-  if (!dir.exists) {
-    dir.create();
+  const dirInfo = await FileSystem.getInfoAsync(SQL_DIR);
+  if (!dirInfo.exists) {
+    await FileSystem.makeDirectoryAsync(SQL_DIR, { intermediates: true });
   }
 
-  const dbFile = new File(getDbPath());
-  if (!dbFile.exists) {
+  const fileInfo = await FileSystem.getInfoAsync(DB_PATH);
+  if (!fileInfo.exists || fileInfo.size === 0) {
+    // Remove stale empty file if it exists
+    if (fileInfo.exists) {
+      await FileSystem.deleteAsync(DB_PATH);
+    }
     const asset = Asset.fromModule(
       require('../../assets/databases/FlashWorks.sqlite')
     );
@@ -34,8 +34,10 @@ async function ensureDatabase(): Promise<void> {
     if (!asset.localUri) {
       throw new Error('Failed to resolve database asset URI');
     }
-    const sourceFile = new File(asset.localUri);
-    sourceFile.copy(dbFile);
+    await FileSystem.copyAsync({
+      from: asset.localUri,
+      to: DB_PATH,
+    });
   }
 }
 
@@ -44,7 +46,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (dbInstance) return dbInstance;
 
   await ensureDatabase();
-  dbInstance = await SQLite.openDatabaseAsync(getDbPath());
+  dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
   return dbInstance;
 }
 
@@ -62,15 +64,15 @@ export async function closeDatabase(): Promise<void> {
  */
 export async function resetDatabase(): Promise<void> {
   await closeDatabase();
-  const dbFile = new File(getDbPath());
-  if (dbFile.exists) {
-    dbFile.delete();
+  const fileInfo = await FileSystem.getInfoAsync(DB_PATH);
+  if (fileInfo.exists) {
+    await FileSystem.deleteAsync(DB_PATH);
   }
   await ensureDatabase();
-  dbInstance = await SQLite.openDatabaseAsync(getDbPath());
+  dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
 }
 
 /** Returns the path to the current database file (for export) */
 export function getDatabasePath(): string {
-  return getDbPath();
+  return DB_PATH;
 }
