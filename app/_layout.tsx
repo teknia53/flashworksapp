@@ -2,16 +2,15 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 import 'react-native-reanimated';
+
+import { DatabaseProvider } from '@/src/state/DatabaseContext';
 
 export { ErrorBoundary } from 'expo-router';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-
   const [loaded, error] = useFonts({
     'GentiumPlus': require('../assets/fonts/GentiumPlus-Regular.ttf'),
     'GentiumPlus-Bold': require('../assets/fonts/GentiumPlus-Bold.ttf'),
@@ -33,8 +32,10 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" />
-    </Stack>
+    <DatabaseProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+    </DatabaseProvider>
   );
 }
