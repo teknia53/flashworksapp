@@ -1,4 +1,12 @@
 import { View, Pressable, StyleSheet } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolate,
+  Easing,
+} from 'react-native-reanimated';
+import { useEffect } from 'react';
 import { useTheme, spacing, borderRadius } from '@/src/theme';
 import { GreekText } from './GreekText';
 import { MeaningText } from './MeaningText';
@@ -21,27 +29,78 @@ export function FlashCard({
   meaningFontSize = 24,
 }: FlashCardProps) {
   const { colors } = useTheme();
+  const flipProgress = useSharedValue(0);
+
+  useEffect(() => {
+    flipProgress.value = withTiming(face === 'meaning' ? 1 : 0, {
+      duration: 400,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [face]);
+
+  const frontStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(flipProgress.value, [0, 0.5, 1], [1, 0, 0]),
+    transform: [
+      { perspective: 1200 },
+      { rotateY: `${interpolate(flipProgress.value, [0, 1], [0, 180])}deg` },
+    ],
+  }));
+
+  const backStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(flipProgress.value, [0, 0.5, 1], [0, 0, 1]),
+    transform: [
+      { perspective: 1200 },
+      { rotateY: `${interpolate(flipProgress.value, [0, 1], [180, 360])}deg` },
+    ],
+  }));
 
   return (
-    <Pressable onPress={onTap} style={[styles.card, { backgroundColor: colors.surface, shadowColor: colors.cardShadow }]}>
-      <View style={styles.content}>
-        <GreekText text={word.dbWord} baseFontSize={greekFontSize} />
-        {face === 'meaning' && (
-          <View style={styles.meaningContainer}>
-            <MeaningText text={word.dbMeaning} fontSize={meaningFontSize} />
-            {word.dbPrincipalParts ? (
-              <MeaningText text={word.dbPrincipalParts} fontSize={Math.floor(meaningFontSize * 0.75)} />
-            ) : null}
-          </View>
-        )}
-      </View>
+    <Pressable onPress={onTap} style={styles.wrapper}>
+      {/* Front face (word only) */}
+      <Animated.View
+        style={[
+          styles.card,
+          { backgroundColor: colors.surface, shadowColor: colors.cardShadow },
+          frontStyle,
+        ]}
+      >
+        <View style={styles.content}>
+          <GreekText text={word.dbWord} baseFontSize={greekFontSize} />
+        </View>
+      </Animated.View>
+
+      {/* Back face (word + meaning) */}
+      <Animated.View
+        style={[
+          styles.card,
+          styles.cardBack,
+          { backgroundColor: colors.surface, shadowColor: colors.cardShadow },
+          backStyle,
+        ]}
+      >
+        <View style={styles.content}>
+          <GreekText text={word.dbWord} baseFontSize={Math.floor(greekFontSize * 0.85)} />
+          <View style={styles.divider} />
+          <MeaningText text={word.dbMeaning} fontSize={meaningFontSize} />
+          {word.dbPrincipalParts ? (
+            <MeaningText
+              text={word.dbPrincipalParts}
+              fontSize={Math.floor(meaningFontSize * 0.7)}
+            />
+          ) : null}
+        </View>
+      </Animated.View>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: { width: '100%', minHeight: 300 },
   card: {
-    width: '100%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     minHeight: 300,
     borderRadius: borderRadius.xl,
     justifyContent: 'center',
@@ -51,16 +110,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 16,
     elevation: 5,
+    backfaceVisibility: 'hidden',
+  },
+  cardBack: {
+    // Back card is absolutely positioned on top
   },
   content: {
-    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+    gap: spacing.lg,
   },
-  meaningContainer: {
-    marginTop: spacing.xl,
-    gap: spacing.sm,
-    alignItems: 'center',
+  divider: {
+    width: 40,
+    height: 2,
+    backgroundColor: 'rgba(128,128,128,0.2)',
+    borderRadius: 1,
   },
 });

@@ -1,12 +1,17 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, borderRadius } from '@/src/theme';
 import { useDatabase } from '@/src/state/DatabaseContext';
 import { useStudy } from '@/src/state/StudyContext';
 import { usePreferences } from '@/src/state/PreferencesContext';
+import { useHaptics } from '@/src/hooks/useHaptics';
+import { useAutoTimer } from '@/src/hooks/useAutoTimer';
 import { FlashCard } from '@/src/components/study/FlashCard';
 import { StudyControls } from '@/src/components/study/StudyControls';
+import { SwipeableCard } from '@/src/components/study/SwipeableCard';
+import { AutoTimerBar } from '@/src/components/study/AutoTimer';
 
 function formatTime(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
@@ -19,11 +24,13 @@ export default function StudyScreen() {
   const { colors } = useTheme();
   const { isReady } = useDatabase();
   const { active } = usePreferences();
+  const haptics = useHaptics();
   const {
     state,
     currentWord,
     loadDeck,
     startManual,
+    startAuto,
     reveal,
     answerRight,
     answerWrong,
@@ -32,7 +39,7 @@ export default function StudyScreen() {
     tick,
   } = useStudy();
 
-  // Timer
+  // Session timer
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -47,6 +54,25 @@ export default function StudyScreen() {
     };
   }, [state.mode, state.isComplete, tick]);
 
+  // Auto mode timer
+  const handleAutoWordTimeout = useCallback(() => {
+    reveal();
+    haptics.reveal();
+  }, [reveal, haptics]);
+
+  const handleAutoMeaningTimeout = useCallback(() => {
+    // In auto mode, move to next (count as "right" by default)
+    answerRight();
+  }, [answerRight]);
+
+  const { remaining: autoRemaining } = useAutoTimer({
+    seconds: active?.seconds ?? 3,
+    isRunning: state.mode === 'auto' && !state.isComplete,
+    onWordTimeout: handleAutoWordTimeout,
+    onMeaningTimeout: handleAutoMeaningTimeout,
+    face: state.cardFace,
+  });
+
   // Load deck when ready
   useEffect(() => {
     if (isReady && active) {
@@ -54,13 +80,36 @@ export default function StudyScreen() {
     }
   }, [isReady, active]);
 
-  const handleStartStudy = useCallback(() => {
+  const handleStartManual = useCallback(() => {
     if (state.deck.length === 0) {
       loadDeck().then(() => startManual());
     } else {
       startManual();
     }
   }, [state.deck.length, loadDeck, startManual]);
+
+  const handleStartAuto = useCallback(() => {
+    if (state.deck.length === 0) {
+      loadDeck().then(() => startAuto());
+    } else {
+      startAuto();
+    }
+  }, [state.deck.length, loadDeck, startAuto]);
+
+  const handleReveal = useCallback(() => {
+    reveal();
+    haptics.reveal();
+  }, [reveal, haptics]);
+
+  const handleRight = useCallback(() => {
+    haptics.right();
+    answerRight();
+  }, [answerRight, haptics]);
+
+  const handleWrong = useCallback(() => {
+    haptics.wrong();
+    answerWrong();
+  }, [answerWrong, haptics]);
 
   // ─── Idle state ─────────────────────────────────────────────
   if (state.mode === 'idle') {
@@ -77,14 +126,21 @@ export default function StudyScreen() {
           </Text>
 
           {state.deck.length > 0 && (
-            <>
+            <View style={styles.buttonGroup}>
               <Pressable
                 style={[styles.startBtn, { backgroundColor: colors.primary }]}
-                onPress={handleStartStudy}
+                onPress={handleStartManual}
               >
-                <Ionicons name="play" size={24} color="#fff" />
+                <Ionicons name="hand-left" size={22} color="#fff" />
+                <Text style={[styles.startBtnText, { fontFamily: 'Inter-Bold' }]}>Manual</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.startBtn, { backgroundColor: colors.accent }]}
+                onPress={handleStartAuto}
+              >
+                <Ionicons name="timer" size={22} color="#fff" />
                 <Text style={[styles.startBtnText, { fontFamily: 'Inter-Bold' }]}>
-                  Start Study
+                  Auto ({active?.seconds ?? 3}s)
                 </Text>
               </Pressable>
               <Pressable
@@ -96,7 +152,7 @@ export default function StudyScreen() {
                   Shuffle
                 </Text>
               </Pressable>
-            </>
+            </View>
           )}
         </View>
       </SafeAreaView>
@@ -165,58 +221,97 @@ export default function StudyScreen() {
 
   // ─── Active study state ─────────────────────────────────────
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={[styles.counter, { color: colors.textSecondary, fontFamily: 'Inter-Medium' }]}>
-          {state.currentIndex + 1} / {state.deck.length}
-        </Text>
-        <Text style={[styles.timer, { color: colors.textMuted, fontFamily: 'Inter' }]}>
-          {formatTime(state.elapsedMs)}
-        </Text>
-      </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <View style={[styles.modeBadge, { backgroundColor: state.mode === 'auto' ? colors.accent : colors.primary }]}>
+              <Text style={[styles.modeBadgeText, { fontFamily: 'Inter-Bold' }]}>
+                {state.mode === 'auto' ? 'AUTO' : 'MANUAL'}
+              </Text>
+            </View>
+            <Text style={[styles.counter, { color: colors.textSecondary, fontFamily: 'Inter-Medium' }]}>
+              {state.currentIndex + 1} / {state.deck.length}
+            </Text>
+          </View>
+          <Text style={[styles.timer, { color: colors.textMuted, fontFamily: 'Inter' }]}>
+            {formatTime(state.elapsedMs)}
+          </Text>
+        </View>
 
-      {/* Progress bar */}
-      <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
-        <View
-          style={[
-            styles.progressFill,
-            {
-              backgroundColor: colors.primary,
-              width: `${((state.currentIndex + 1) / state.deck.length) * 100}%`,
-            },
-          ]}
-        />
-      </View>
+        {/* Progress bar */}
+        <View style={[styles.progressTrack, { backgroundColor: colors.border }]}>
+          <View
+            style={[
+              styles.progressFill,
+              {
+                backgroundColor: colors.primary,
+                width: `${((state.currentIndex + 1) / state.deck.length) * 100}%`,
+              },
+            ]}
+          />
+        </View>
 
-      {/* Card */}
-      <View style={styles.cardContainer}>
+        {/* Auto timer bar */}
+        {state.mode === 'auto' && (
+          <View style={styles.autoTimerContainer}>
+            <AutoTimerBar remaining={autoRemaining} total={active?.seconds ?? 3} />
+          </View>
+        )}
+
+        {/* Card with swipe */}
+        <View style={styles.cardContainer}>
+          <SwipeableCard
+            onSwipeRight={handleRight}
+            onSwipeLeft={handleWrong}
+            enabled={state.cardFace === 'meaning'}
+          >
+            {currentWord && (
+              <FlashCard
+                word={currentWord}
+                face={state.cardFace}
+                onTap={state.cardFace === 'word' ? handleReveal : () => {}}
+                greekFontSize={active?.sizeOfForeign ? Math.floor(active.sizeOfForeign / 2.5) : 48}
+                meaningFontSize={active?.sizeOfMeaning ? Math.floor(active.sizeOfMeaning / 2.5) : 24}
+              />
+            )}
+          </SwipeableCard>
+        </View>
+
+        {/* Difficulty badge */}
         {currentWord && (
-          <FlashCard
-            word={currentWord}
-            face={state.cardFace}
-            onTap={state.cardFace === 'word' ? reveal : () => {}}
-            greekFontSize={active?.sizeOfForeign ? Math.floor(active.sizeOfForeign / 2.5) : 48}
-            meaningFontSize={active?.sizeOfMeaning ? Math.floor(active.sizeOfMeaning / 2.5) : 24}
+          <Text style={[styles.diffBadge, { color: colors.textMuted, fontFamily: 'Inter' }]}>
+            Ch. {currentWord.dbChapter} · Diff {currentWord.dbDifficulty} · Freq {currentWord.dbFrequency}
+          </Text>
+        )}
+
+        {/* Swipe hint */}
+        {state.cardFace === 'meaning' && state.mode === 'manual' && (
+          <Text style={[styles.swipeHint, { color: colors.textMuted, fontFamily: 'Inter' }]}>
+            Swipe right = correct · Swipe left = wrong
+          </Text>
+        )}
+
+        {/* Controls (hidden in auto mode when card showing word) */}
+        {state.mode === 'manual' && (
+          <StudyControls
+            cardFace={state.cardFace}
+            onReveal={handleReveal}
+            onRight={handleRight}
+            onWrong={handleWrong}
           />
         )}
-      </View>
-
-      {/* Difficulty badge */}
-      {currentWord && (
-        <Text style={[styles.diffBadge, { color: colors.textMuted, fontFamily: 'Inter' }]}>
-          Ch. {currentWord.dbChapter} · Diff {currentWord.dbDifficulty} · Freq {currentWord.dbFrequency}
-        </Text>
-      )}
-
-      {/* Controls */}
-      <StudyControls
-        cardFace={state.cardFace}
-        onReveal={reveal}
-        onRight={answerRight}
-        onWrong={answerWrong}
-      />
-    </SafeAreaView>
+        {state.mode === 'auto' && state.cardFace === 'meaning' && (
+          <StudyControls
+            cardFace={state.cardFace}
+            onReveal={handleReveal}
+            onRight={handleRight}
+            onWrong={handleWrong}
+          />
+        )}
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -229,6 +324,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  modeBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  modeBadgeText: { color: '#fff', fontSize: 11, letterSpacing: 0.5 },
   counter: { fontSize: 16 },
   timer: { fontSize: 14 },
   progressTrack: {
@@ -239,6 +345,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   progressFill: { height: '100%', borderRadius: 2 },
+  autoTimerContainer: { marginTop: spacing.sm },
   cardContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -248,7 +355,12 @@ const styles = StyleSheet.create({
   diffBadge: {
     textAlign: 'center',
     fontSize: 13,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+  },
+  swipeHint: {
+    textAlign: 'center',
+    fontSize: 12,
+    marginBottom: spacing.xs,
   },
   // Idle
   idleContent: {
@@ -259,6 +371,10 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 32, marginBottom: spacing.sm },
   subtitle: { fontSize: 18, marginBottom: spacing['3xl'] },
+  buttonGroup: {
+    alignItems: 'center',
+    gap: spacing.md,
+  },
   startBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -266,7 +382,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing['3xl'],
     paddingVertical: spacing.lg,
     borderRadius: borderRadius.lg,
-    marginBottom: spacing.lg,
+    minWidth: 200,
+    justifyContent: 'center',
   },
   startBtnText: { color: '#fff', fontSize: 18 },
   secondaryBtn: {
