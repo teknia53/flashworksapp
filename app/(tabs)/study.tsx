@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, SafeAreaView, useWindowDimensions } from 'react-native';
+import { View, Text, Pressable, StyleSheet, SafeAreaView, useWindowDimensions, Image } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, borderRadius } from '@/src/theme';
@@ -123,7 +123,11 @@ export default function StudyScreen() {
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={[styles.idleContent, isLandscape && styles.idleContentLandscape]}>
           <View style={styles.idleTextBlock}>
-            <Text style={[styles.title, { color: colors.text, fontFamily: 'Inter-Bold' }]}>
+            <Text
+              style={[styles.title, { color: colors.text, fontFamily: 'Inter-Bold' }]}
+              numberOfLines={1}
+              adjustsFontSizeToFit
+            >
               FlashWorks
             </Text>
             <Text style={[styles.subtitle, { color: colors.textSecondary, fontFamily: 'Inter' }]}>
@@ -133,6 +137,13 @@ export default function StudyScreen() {
                   ? `${state.deck.length} missed ${state.deck.length === 1 ? 'word' : 'words'} loaded`
                   : `${state.deck.length} words ready`}
             </Text>
+            {isLandscape && (
+              <Image
+                source={require('@/assets/images/splash-icon.png')}
+                style={styles.professorLandscape}
+                resizeMode="contain"
+              />
+            )}
           </View>
 
           {state.deck.length > 0 && (
@@ -185,6 +196,14 @@ export default function StudyScreen() {
                 </Pressable>
               )}
             </View>
+          )}
+
+          {!isLandscape && (
+            <Image
+              source={require('@/assets/images/splash-icon.png')}
+              style={styles.professor}
+              resizeMode="contain"
+            />
           )}
         </View>
       </SafeAreaView>
@@ -473,8 +492,17 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
   },
   idleTextBlock: { alignItems: 'center' },
-  title: { fontSize: 32, marginBottom: spacing.sm },
-  subtitle: { fontSize: 18, marginBottom: spacing['3xl'] },
+  title: { fontSize: 60, width: 240, textAlign: 'center', marginBottom: spacing.sm },
+  subtitle: { fontSize: 18, marginTop: spacing.sm, marginBottom: spacing['3xl'] },
+  professor: {
+    width: 225,
+    height: 225,
+    marginTop: spacing.xl,
+  },
+  professorLandscape: {
+    width: 165,
+    height: 165,
+  },
   buttonGroup: {
     alignItems: 'center',
     gap: spacing.xl,
