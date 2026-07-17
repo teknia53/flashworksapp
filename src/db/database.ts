@@ -41,12 +41,20 @@ async function ensureDatabase(): Promise<void> {
   }
 }
 
+/** Schema additions not present in the bundled database */
+async function migrate(db: SQLite.SQLiteDatabase): Promise<void> {
+  await db.execAsync(
+    'CREATE TABLE IF NOT EXISTS missed (dbSequence INTEGER PRIMARY KEY)'
+  );
+}
+
 /** Opens (or returns cached) database connection */
 export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
   if (dbInstance) return dbInstance;
 
   await ensureDatabase();
   dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
+  await migrate(dbInstance);
   return dbInstance;
 }
 
@@ -70,6 +78,7 @@ export async function resetDatabase(): Promise<void> {
   }
   await ensureDatabase();
   dbInstance = await SQLite.openDatabaseAsync(DB_NAME);
+  await migrate(dbInstance);
 }
 
 /** Returns the path to the current database file (for export) */

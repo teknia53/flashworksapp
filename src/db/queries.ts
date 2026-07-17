@@ -244,3 +244,34 @@ export async function searchWords(
     pattern
   );
 }
+
+// ─── Missed words (persisted per most-recent session) ───────────────
+
+export async function clearMissedWords(db: SQLiteDatabase): Promise<void> {
+  await db.runAsync('DELETE FROM missed');
+}
+
+export async function addMissedWord(
+  db: SQLiteDatabase,
+  dbSequence: number
+): Promise<void> {
+  await db.runAsync(
+    'INSERT OR IGNORE INTO missed (dbSequence) VALUES (?)',
+    dbSequence
+  );
+}
+
+export async function getMissedWords(db: SQLiteDatabase): Promise<FlashWord[]> {
+  return db.getAllAsync<FlashWord>(
+    `SELECT flash.* FROM flash
+     JOIN missed ON flash.dbSequence = missed.dbSequence
+     ORDER BY flash.dbChapter, flash.dbSequence`
+  );
+}
+
+export async function getMissedCount(db: SQLiteDatabase): Promise<number> {
+  const row = await db.getFirstAsync<{ n: number }>(
+    'SELECT COUNT(*) AS n FROM missed'
+  );
+  return row?.n ?? 0;
+}

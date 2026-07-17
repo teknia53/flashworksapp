@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
@@ -37,8 +37,18 @@ export default function StudyScreen() {
     shuffleDeck,
     stopSession,
     restartDeck,
+    loadMissedDeck,
+    getMissedCount,
     tick,
   } = useStudy();
+
+  // Persisted missed-word count, refreshed whenever the idle screen shows
+  const [missedCount, setMissedCount] = useState(0);
+  useEffect(() => {
+    if (isReady && state.mode === 'idle') {
+      getMissedCount().then(setMissedCount);
+    }
+  }, [isReady, state.mode, state.deckSource, getMissedCount]);
 
   // Session timer
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -114,9 +124,11 @@ export default function StudyScreen() {
             FlashWorks
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary, fontFamily: 'Inter' }]}>
-            {state.deck.length > 0
-              ? `${state.deck.length} words ready`
-              : 'Loading words...'}
+            {state.deck.length === 0
+              ? 'Loading words...'
+              : state.deckSource === 'missed'
+                ? `${state.deck.length} missed ${state.deck.length === 1 ? 'word' : 'words'} loaded`
+                : `${state.deck.length} words ready`}
           </Text>
 
           {state.deck.length > 0 && (
@@ -146,6 +158,28 @@ export default function StudyScreen() {
                   Shuffle
                 </Text>
               </Pressable>
+              {state.deckSource !== 'missed' && missedCount > 0 && (
+                <Pressable
+                  style={[styles.secondaryBtn, { borderColor: colors.error }]}
+                  onPress={loadMissedDeck}
+                >
+                  <Ionicons name="repeat" size={20} color={colors.error} />
+                  <Text style={[styles.secondaryBtnText, { color: colors.error, fontFamily: 'Inter-Medium' }]}>
+                    Review Missed ({missedCount})
+                  </Text>
+                </Pressable>
+              )}
+              {state.deckSource === 'missed' && (
+                <Pressable
+                  style={[styles.secondaryBtn, { borderColor: colors.primary }]}
+                  onPress={loadDeck}
+                >
+                  <Ionicons name="albums" size={20} color={colors.primary} />
+                  <Text style={[styles.secondaryBtnText, { color: colors.primary, fontFamily: 'Inter-Medium' }]}>
+                    All Words
+                  </Text>
+                </Pressable>
+              )}
             </View>
           )}
         </View>

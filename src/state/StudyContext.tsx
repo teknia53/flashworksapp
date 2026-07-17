@@ -19,6 +19,8 @@ interface ErrorEntry {
 interface StudyState {
   mode: StudyMode;
   deck: FlashWord[];
+  /** Where the current deck came from: the preference filter or the missed-word list */
+  deckSource: 'filter' | 'missed';
   currentIndex: number;
   cardFace: CardFace;
   sessionTotal: number;
@@ -39,11 +41,13 @@ type StudyAction =
   | { type: 'TICK'; ms: number }
   | { type: 'STOP' }
   | { type: 'RESET' }
-  | { type: 'DRILL_ERRORS'; deck: FlashWord[] };
+  | { type: 'DRILL_ERRORS'; deck: FlashWord[] }
+  | { type: 'LOAD_MISSED'; deck: FlashWord[] };
 
 const initialState: StudyState = {
   mode: 'idle',
   deck: [],
+  deckSource: 'filter',
   currentIndex: 0,
   cardFace: 'word',
   sessionTotal: 0,
@@ -61,6 +65,13 @@ function studyReducer(state: StudyState, action: StudyAction): StudyState {
       return {
         ...initialState,
         deck: action.deck,
+      };
+
+    case 'LOAD_MISSED':
+      return {
+        ...initialState,
+        deck: action.deck,
+        deckSource: 'missed',
       };
 
     case 'START':
@@ -138,6 +149,7 @@ function studyReducer(state: StudyState, action: StudyAction): StudyState {
       return {
         ...initialState,
         deck: action.deck,
+        deckSource: 'missed',
         mode: state.mode,
       };
 
@@ -163,6 +175,10 @@ interface StudyContextValue {
   stopSession: () => void;
   resetSession: () => void;
   drillErrors: () => Promise<void>;
+  /** Load the persisted missed words from the most recent session as the deck */
+  loadMissedDeck: () => Promise<number>;
+  /** Count of persisted missed words */
+  getMissedCount: () => Promise<number>;
   tick: (ms: number) => void;
   /** Restart from top of current deck */
   restartDeck: () => void;
@@ -172,7 +188,10 @@ const StudyContext = createContext<StudyContextValue | null>(null);
 
 export function StudyProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(studyReducer, initialState);
-  const { getFilteredWords, saveSingleDifficulty, getFilteredWordCount } = useDatabase();
+  const {
+    getFilteredWords, saveSingleDifficulty, getFilteredWordCount,
+    clearMissedWords, addMissedWord, getMissedWords, getMissedCount,
+  } = useDatabase();
   const { active, wordFilter } = usePreferences();
 
   const currentWord = state.deck.length > 0 && state.currentIndex < state.deck.length
@@ -185,8 +204,15 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'LOAD_DECK', deck: shuffle(words) });
   }, [wordFilter, getFilteredWords]);
 
-  const startManual = useCallback(() => dispatch({ type: 'START', mode: 'manual' }), []);
-  const startAuto = useCallback(() => dispatch({ type: 'START', mode: 'auto' }), []);
+  // Starting a session begins a fresh persisted miss list
+  const startManual = useCallback(() => {
+    clearMissedWords();
+    dispatch({ type: 'START', mode: 'manual' });
+  }, [clearMissedWords]);
+  const startAuto = useCallback(() => {
+    clearMissedWords();
+    dispatch({ type: 'START', mode: 'auto' });
+  }, [clearMissedWords]);
 
   const reveal = useCallback(() => dispatch({ type: 'REVEAL' }), []);
 
@@ -206,6 +232,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     if (!currentWord || !active) return;
     const update = adjustDifficulty(currentWord, 'wrong', active.setDiffAuto);
     await saveSingleDifficulty(update);
+    await addMissedWord(currentWord.dbSequence);
     const updatedWord: FlashWord = {
       ...currentWord,
       dbDifficulty: update.dbDifficulty,
@@ -220,13 +247,22 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
   const stopSession = useCallback(() => dispatch({ type: 'STOP' }), []);
 
   const resetSession = useCallback(async () => {
+    clearMissedWords();
     dispatch({ type: 'RESET' });
     if (wordFilter) {
       const words = await getFilteredWords(wordFilter);
       dispatch({ type: 'LOAD_DECK', deck: shuffle(words) });
     }
-  }, [wordFilter, getFilteredWords]);
+  }, [wordFilter, getFilteredWords, clearMissedWords]);
   const tick = useCallback((ms: number) => dispatch({ type: 'TICK', ms }), []);
+
+  const loadMissedDeck = useCallback(async () => {
+    const words = await getMissedWords();
+    if (words.length > 0) {
+      dispatch({ type: 'LOAD_MISSED', deck: shuffle(words) });
+    }
+    return words.length;
+  }, [getMissedWords]);
 
   const restartDeck = useCallback(() => {
     dispatch({ type: 'START', mode: state.mode === 'idle' ? 'manual' : state.mode });
@@ -257,6 +293,8 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         stopSession,
         resetSession,
         drillErrors,
+        loadMissedDeck,
+        getMissedCount,
         tick,
         restartDeck,
       }}

@@ -37,6 +37,11 @@ interface DatabaseContextValue {
     dbCounter: number;
     dbSetDiffWordAuto: number;
   }) => Promise<void>;
+  /** Missed words (persisted per most-recent session) */
+  clearMissedWords: () => Promise<void>;
+  addMissedWord: (dbSequence: number) => Promise<void>;
+  getMissedWords: () => Promise<FlashWord[]>;
+  getMissedCount: () => Promise<number>;
 }
 
 const DatabaseContext = createContext<DatabaseContextValue | null>(null);
@@ -153,6 +158,25 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
       },
       [db]
     ),
+    clearMissedWords: useCallback(() => {
+      if (!db) return Promise.resolve();
+      return queries.clearMissedWords(db);
+    }, [db]),
+    addMissedWord: useCallback(
+      (dbSequence: number) => {
+        if (!db) return Promise.resolve();
+        return queries.addMissedWord(db, dbSequence);
+      },
+      [db]
+    ),
+    getMissedWords: useCallback(() => {
+      if (!db) return Promise.resolve([]);
+      return queries.getMissedWords(db);
+    }, [db]),
+    getMissedCount: useCallback(() => {
+      if (!db) return Promise.resolve(0);
+      return queries.getMissedCount(db);
+    }, [db]),
   };
 
   return (
