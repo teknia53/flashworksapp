@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, Pressable, StyleSheet, SafeAreaView, useWindowDimensions } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, borderRadius } from '@/src/theme';
@@ -22,6 +22,8 @@ function formatTime(ms: number): string {
 
 export default function StudyScreen() {
   const { colors } = useTheme();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
   const { isReady } = useDatabase();
   const { active } = usePreferences();
   const haptics = useHaptics();
@@ -119,17 +121,19 @@ export default function StudyScreen() {
   if (state.mode === 'idle') {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={styles.idleContent}>
-          <Text style={[styles.title, { color: colors.text, fontFamily: 'Inter-Bold' }]}>
-            FlashWorks
-          </Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary, fontFamily: 'Inter' }]}>
-            {state.deck.length === 0
-              ? 'Loading words...'
-              : state.deckSource === 'missed'
-                ? `${state.deck.length} missed ${state.deck.length === 1 ? 'word' : 'words'} loaded`
-                : `${state.deck.length} words ready`}
-          </Text>
+        <View style={[styles.idleContent, isLandscape && styles.idleContentLandscape]}>
+          <View style={styles.idleTextBlock}>
+            <Text style={[styles.title, { color: colors.text, fontFamily: 'Inter-Bold' }]}>
+              FlashWorks
+            </Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary, fontFamily: 'Inter' }]}>
+              {state.deck.length === 0
+                ? 'Loading words...'
+                : state.deckSource === 'missed'
+                  ? `${state.deck.length} missed ${state.deck.length === 1 ? 'word' : 'words'} loaded`
+                  : `${state.deck.length} words ready`}
+            </Text>
+          </View>
 
           {state.deck.length > 0 && (
             <View style={styles.buttonGroup}>
@@ -299,56 +303,85 @@ export default function StudyScreen() {
           </View>
         )}
 
-        {/* Card with swipe */}
-        <View style={styles.cardContainer}>
-          <SwipeableCard
-            onSwipeRight={handleRight}
-            onSwipeLeft={handleWrong}
-            enabled={state.cardFace === 'meaning'}
-          >
+        <View style={[styles.body, isLandscape && styles.bodyLandscape]}>
+          <View style={styles.cardColumn}>
+            {/* Card with swipe */}
+            <View style={styles.cardContainer}>
+              <SwipeableCard
+                onSwipeRight={handleRight}
+                onSwipeLeft={handleWrong}
+                enabled={state.cardFace === 'meaning'}
+              >
+                {currentWord && (
+                  <FlashCard
+                    word={currentWord}
+                    face={state.cardFace}
+                    onTap={state.cardFace === 'word' ? handleReveal : () => {}}
+                    greekFontSize={active?.sizeOfForeign ? Math.floor(active.sizeOfForeign / (isLandscape ? 1.7 : 2.5)) : isLandscape ? 70 : 48}
+                    meaningFontSize={active?.sizeOfMeaning ? Math.floor(active.sizeOfMeaning / (isLandscape ? 1.9 : 2.5)) : isLandscape ? 32 : 24}
+                    minHeight={isLandscape ? 210 : 300}
+                  />
+                )}
+              </SwipeableCard>
+            </View>
+
+            {/* Difficulty badge */}
             {currentWord && (
-              <FlashCard
-                word={currentWord}
-                face={state.cardFace}
-                onTap={state.cardFace === 'word' ? handleReveal : () => {}}
-                greekFontSize={active?.sizeOfForeign ? Math.floor(active.sizeOfForeign / 2.5) : 48}
-                meaningFontSize={active?.sizeOfMeaning ? Math.floor(active.sizeOfMeaning / 2.5) : 24}
+              <Text style={[styles.diffBadge, { color: colors.textMuted, fontFamily: 'Inter' }]}>
+                {currentWord.dbChapter !== 99 ? `Chapter ${currentWord.dbChapter} · ` : ''}Difficulty {currentWord.dbDifficulty} · Frequency {currentWord.dbFrequency}
+              </Text>
+            )}
+
+            {/* Swipe hint */}
+            {state.cardFace === 'meaning' && state.mode === 'manual' && (
+              <Text style={[styles.swipeHint, { color: colors.textMuted, fontFamily: 'Inter' }]}>
+                Swipe right = correct · Swipe left = wrong
+              </Text>
+            )}
+
+            {/* Portrait: controls under the card */}
+            {!isLandscape && state.mode === 'manual' && (
+              <StudyControls
+                cardFace={state.cardFace}
+                onReveal={handleReveal}
+                onRight={handleRight}
+                onWrong={handleWrong}
               />
             )}
-          </SwipeableCard>
+            {!isLandscape && state.mode === 'auto' && state.cardFace === 'meaning' && (
+              <StudyControls
+                cardFace="meaning"
+                onReveal={handleReveal}
+                onRight={handleRight}
+                onWrong={handleWrong}
+              />
+            )}
+          </View>
+
+          {/* Landscape: controls stacked down the right side */}
+          {isLandscape && (
+            <View style={styles.sideControls}>
+              {state.mode === 'manual' && (
+                <StudyControls
+                  vertical
+                  cardFace={state.cardFace}
+                  onReveal={handleReveal}
+                  onRight={handleRight}
+                  onWrong={handleWrong}
+                />
+              )}
+              {state.mode === 'auto' && state.cardFace === 'meaning' && (
+                <StudyControls
+                  vertical
+                  cardFace="meaning"
+                  onReveal={handleReveal}
+                  onRight={handleRight}
+                  onWrong={handleWrong}
+                />
+              )}
+            </View>
+          )}
         </View>
-
-        {/* Difficulty badge */}
-        {currentWord && (
-          <Text style={[styles.diffBadge, { color: colors.textMuted, fontFamily: 'Inter' }]}>
-            {currentWord.dbChapter !== 99 ? `Chapter ${currentWord.dbChapter} · ` : ''}Difficulty {currentWord.dbDifficulty} · Frequency {currentWord.dbFrequency}
-          </Text>
-        )}
-
-        {/* Swipe hint */}
-        {state.cardFace === 'meaning' && state.mode === 'manual' && (
-          <Text style={[styles.swipeHint, { color: colors.textMuted, fontFamily: 'Inter' }]}>
-            Swipe right = correct · Swipe left = wrong
-          </Text>
-        )}
-
-        {/* Controls — in auto mode, hide Reveal (timer handles it), show Right/Wrong after reveal */}
-        {state.mode === 'manual' && (
-          <StudyControls
-            cardFace={state.cardFace}
-            onReveal={handleReveal}
-            onRight={handleRight}
-            onWrong={handleWrong}
-          />
-        )}
-        {state.mode === 'auto' && state.cardFace === 'meaning' && (
-          <StudyControls
-            cardFace="meaning"
-            onReveal={handleReveal}
-            onRight={handleRight}
-            onWrong={handleWrong}
-          />
-        )}
       </SafeAreaView>
     </GestureHandlerRootView>
   );
@@ -400,6 +433,18 @@ const styles = StyleSheet.create({
   },
   progressFill: { height: '100%', borderRadius: 2 },
   autoTimerContainer: { marginTop: spacing.sm },
+  body: { flex: 1 },
+  bodyLandscape: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardColumn: { flex: 1, alignSelf: 'stretch' },
+  sideControls: {
+    width: 210,
+    justifyContent: 'center',
+    paddingRight: spacing.lg,
+    paddingLeft: spacing.sm,
+  },
   cardContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -423,6 +468,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.xl,
   },
+  idleContentLandscape: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+  },
+  idleTextBlock: { alignItems: 'center' },
   title: { fontSize: 32, marginBottom: spacing.sm },
   subtitle: { fontSize: 18, marginBottom: spacing['3xl'] },
   buttonGroup: {

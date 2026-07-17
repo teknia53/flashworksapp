@@ -3,7 +3,7 @@
     "name": "FlashWorks",
     "slug": "FlashWorksApp",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "flashworksapp",
     "userInterfaceStyle": "automatic",

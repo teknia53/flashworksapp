@@ -19,6 +19,7 @@ interface FlashCardProps {
   onTap: () => void;
   greekFontSize?: number;
   meaningFontSize?: number;
+  minHeight?: number;
 }
 
 export function FlashCard({
@@ -27,6 +28,7 @@ export function FlashCard({
   onTap,
   greekFontSize = 48,
   meaningFontSize = 24,
+  minHeight = 300,
 }: FlashCardProps) {
   const { colors } = useTheme();
   const flipProgress = useSharedValue(0);
@@ -55,12 +57,12 @@ export function FlashCard({
   }));
 
   return (
-    <Pressable onPress={onTap} style={styles.wrapper}>
+    <Pressable onPress={onTap} style={[styles.wrapper, { minHeight }]}>
       {/* Front face (word only) */}
       <Animated.View
         style={[
           styles.card,
-          { backgroundColor: colors.surface, shadowColor: colors.cardShadow },
+          { backgroundColor: colors.surface, shadowColor: colors.cardShadow, minHeight },
           frontStyle,
         ]}
       >
@@ -74,7 +76,7 @@ export function FlashCard({
         style={[
           styles.card,
           styles.cardBack,
-          { backgroundColor: colors.surface, shadowColor: colors.cardShadow },
+          { backgroundColor: colors.surface, shadowColor: colors.cardShadow, minHeight },
           backStyle,
         ]}
       >
@@ -95,13 +97,12 @@ export function FlashCard({
 }
 
 const styles = StyleSheet.create({
-  wrapper: { width: '100%', minHeight: 300 },
+  wrapper: { width: '100%' },
   card: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    minHeight: 300,
     borderRadius: borderRadius.xl,
     justifyContent: 'center',
     alignItems: 'center',

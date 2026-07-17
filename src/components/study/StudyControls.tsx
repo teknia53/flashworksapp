@@ -8,16 +8,20 @@ interface StudyControlsProps {
   onReveal: () => void;
   onRight: () => void;
   onWrong: () => void;
+  /** Stack buttons vertically (landscape side column) */
+  vertical?: boolean;
 }
 
-export function StudyControls({ cardFace, onReveal, onRight, onWrong }: StudyControlsProps) {
+export function StudyControls({ cardFace, onReveal, onRight, onWrong, vertical = false }: StudyControlsProps) {
   const { colors } = useTheme();
+  const containerStyle = vertical ? styles.containerVertical : styles.container;
+  const btnFlex = vertical ? undefined : styles.btnFlex;
 
   if (cardFace === 'word') {
     return (
-      <View style={styles.container}>
+      <View style={containerStyle}>
         <Pressable
-          style={[styles.revealBtn, { backgroundColor: colors.primary }]}
+          style={[styles.btn, btnFlex, { backgroundColor: colors.primary }]}
           onPress={onReveal}
         >
           <Ionicons name="eye" size={24} color="#fff" />
@@ -28,16 +32,16 @@ export function StudyControls({ cardFace, onReveal, onRight, onWrong }: StudyCon
   }
 
   return (
-    <View style={styles.container}>
+    <View style={containerStyle}>
       <Pressable
-        style={[styles.answerBtn, { backgroundColor: colors.error }]}
+        style={[styles.btn, btnFlex, { backgroundColor: colors.error }]}
         onPress={onWrong}
       >
         <Ionicons name="close" size={28} color="#fff" />
         <Text style={[styles.btnText, { fontFamily: 'Inter-Bold' }]}>Wrong</Text>
       </Pressable>
       <Pressable
-        style={[styles.answerBtn, { backgroundColor: colors.success }]}
+        style={[styles.btn, btnFlex, { backgroundColor: colors.success }]}
         onPress={onRight}
       >
         <Ionicons name="checkmark" size={28} color="#fff" />
@@ -54,8 +58,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
   },
-  revealBtn: {
-    flex: 1,
+  containerVertical: {
+    flexDirection: 'column',
+    gap: spacing.md,
+    alignSelf: 'stretch',
+  },
+  btn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -63,14 +71,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     borderRadius: borderRadius.lg,
   },
-  answerBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius.lg,
-  },
+  btnFlex: { flex: 1 },
   btnText: { color: '#fff', fontSize: 18 },
 });
