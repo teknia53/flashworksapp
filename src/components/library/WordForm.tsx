@@ -57,7 +57,7 @@ export function WordForm({ initialWord, onSave, onDelete, onCancel }: WordFormPr
         Greek Word
       </Text>
       <TextInput
-        style={[inputStyle, { fontFamily: 'GentiumPlus', fontSize: 22 }]}
+        style={[inputStyle, { fontFamily: 'Times New Roman', fontSize: 22 }]}
         value={word}
         onChangeText={setWord}
         placeholder="Enter Greek word"
@@ -80,7 +80,7 @@ export function WordForm({ initialWord, onSave, onDelete, onCancel }: WordFormPr
         Principal Parts
       </Text>
       <TextInput
-        style={[inputStyle, { fontFamily: 'GentiumPlus' }]}
+        style={[inputStyle, { fontFamily: 'Times New Roman' }]}
         value={principalParts}
         onChangeText={setPrincipalParts}
         placeholder="Optional"

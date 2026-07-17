@@ -16,7 +16,7 @@ export function WordRow({ word, onPress }: WordRowProps) {
     <Pressable onPress={onPress} style={[styles.row, { borderBottomColor: colors.border }]}>
       <View style={styles.left}>
         <Text
-          style={[styles.greek, { color: colors.greekText, fontFamily: 'GentiumPlus' }]}
+          style={[styles.greek, { color: colors.greekText, fontFamily: 'Times New Roman' }]}
           numberOfLines={1}
         >
           {word.dbWord}

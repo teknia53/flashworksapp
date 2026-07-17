@@ -17,7 +17,7 @@ export function ErrorListItem({ word, meaning, index }: ErrorListItemProps) {
       </Text>
       <View style={styles.textContainer}>
         <Text
-          style={[styles.word, { color: colors.greekText, fontFamily: 'GentiumPlus' }]}
+          style={[styles.word, { color: colors.greekText, fontFamily: 'Times New Roman' }]}
           numberOfLines={1}
         >
           {word}

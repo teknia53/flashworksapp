@@ -287,7 +287,7 @@ export default function StudyScreen() {
         {/* Difficulty badge */}
         {currentWord && (
           <Text style={[styles.diffBadge, { color: colors.textMuted, fontFamily: 'Inter' }]}>
-            Ch. {currentWord.dbChapter} · Diff {currentWord.dbDifficulty} · Freq {currentWord.dbFrequency}
+            {currentWord.dbChapter !== 99 ? `Chapter ${currentWord.dbChapter} · ` : ''}Difficulty {currentWord.dbDifficulty} · Frequency {currentWord.dbFrequency}
           </Text>
         )}
 

@@ -2,14 +2,14 @@ import { Platform } from 'react-native';
 
 export const fontFamilies = {
   greek: Platform.select({
-    ios: 'GentiumPlus',
-    android: 'GentiumPlus',
-    default: 'GentiumPlus',
+    ios: 'Times New Roman',
+    android: 'serif',
+    default: 'Times New Roman',
   }),
   greekBold: Platform.select({
-    ios: 'GentiumPlus-Bold',
-    android: 'GentiumPlus-Bold',
-    default: 'GentiumPlus-Bold',
+    ios: 'Times New Roman',
+    android: 'serif',
+    default: 'Times New Roman',
   }),
   ui: 'Inter',
   uiMedium: 'Inter-Medium',

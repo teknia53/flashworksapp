@@ -1,14 +1,14 @@
 export const palette = {
-  brown: '#4A2E1F',       // Rich warm brown — primary actions, headers
-  brownDark: '#3A241C',   // Dark brown — matches app icon background
-  brownDeep: '#1E140E',   // Deep espresso — dark mode background
+  brown: '#0067AC',       // Teknia blue — primary actions, headers
+  brownDark: '#004F85',   // Darker blue — text, app icon background
+  brownDeep: '#00223A',   // Deep navy — dark mode background
   gold: '#C4941A',        // Warm gold — accent highlights
   goldLight: '#F0D47A',   // Light gold — Greek text in dark mode
   parchment: '#E8D5B5',   // Parchment — warm surface tint
   success: '#3D8B4A',     // Warm green — correct answers
   error: '#C04040',       // Red-orange — wrong answers (matches professor robe)
   white: '#FFFFFF',
-  offWhite: '#FAF7F2',    // Warm off-white — parchment-tinted background
+  offWhite: '#FFFFFF',    // White — clean background
   gray100: '#F2EDE6',     // Warm grays throughout
   gray200: '#E2DBD1',
   gray300: '#C4BAB0',

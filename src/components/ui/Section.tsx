@@ -22,17 +22,17 @@ export function Section({ title, children }: SectionProps) {
 }
 
 const styles = StyleSheet.create({
-  wrapper: { marginBottom: spacing.xl },
+  wrapper: { marginBottom: spacing.md },
   title: {
     fontSize: 13,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
     marginLeft: spacing.md,
   },
   card: {
     borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
   },
 });

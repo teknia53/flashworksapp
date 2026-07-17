@@ -1,13 +1,43 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ScrollView, View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, borderRadius } from '@/src/theme';
 import { usePreferences } from '@/src/state/PreferencesContext';
 import { useDatabase } from '@/src/state/DatabaseContext';
-import { Section } from '@/src/components/ui/Section';
 import { SettingRow } from '@/src/components/ui/SettingRow';
 import { RangeDisplay } from '@/src/components/ui/RangeDisplay';
 import { TypeToggle } from '@/src/components/ui/TypeToggle';
 import type { WordType } from '@/src/db/types';
+
+function Accordion({
+  title,
+  expanded,
+  onToggle,
+  children,
+  colors,
+}: {
+  title: string;
+  expanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+  colors: any;
+}) {
+  return (
+    <View style={[styles.accordion, { backgroundColor: colors.surface }]}>
+      <Pressable onPress={onToggle} style={styles.accordionHeader}>
+        <Text style={[styles.accordionTitle, { color: colors.text, fontFamily: 'Inter-Medium' }]}>
+          {title}
+        </Text>
+        <Ionicons
+          name={expanded ? 'chevron-up' : 'chevron-down'}
+          size={20}
+          color={colors.textSecondary}
+        />
+      </Pressable>
+      {expanded && <View style={styles.accordionBody}>{children}</View>}
+    </View>
+  );
+}
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
@@ -15,8 +45,10 @@ export default function SettingsScreen() {
     usePreferences();
   const { getFilteredWordCount } = useDatabase();
   const [matchCount, setMatchCount] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  // Update match count whenever filter changes
+  const toggle = (key: string) => setExpanded((prev) => (prev === key ? null : key));
+
   useEffect(() => {
     if (!wordFilter) return;
     getFilteredWordCount(wordFilter).then(setMatchCount);
@@ -29,7 +61,7 @@ export default function SettingsScreen() {
       const next = current.includes(type)
         ? current.filter((t) => t !== type)
         : [...current, type];
-      if (next.length === 0) return; // Must have at least one type
+      if (next.length === 0) return;
       setSessionOverride({ enabledTypes: next });
     },
     [active, setSessionOverride]
@@ -49,10 +81,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentContainerStyle={styles.content}
-    >
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Match count banner */}
       <View style={[styles.banner, { backgroundColor: colors.primary }]}>
         <Text style={[styles.bannerText, { fontFamily: 'Inter-Bold' }]}>
@@ -74,8 +103,8 @@ export default function SettingsScreen() {
         </View>
       )}
 
-      {/* Difficulty Filter */}
-      <Section title="Difficulty">
+      {/* Accordions */}
+      <Accordion title="Difficulty" expanded={expanded === 'diff'} onToggle={() => toggle('diff')} colors={colors}>
         <RangeDisplay
           label="Difficulty Range"
           low={active.lowDiff}
@@ -91,10 +120,9 @@ export default function SettingsScreen() {
           onToggle={(val) => setSessionOverride({ setDiffAuto: val })}
           last
         />
-      </Section>
+      </Accordion>
 
-      {/* Chapter Filter */}
-      <Section title="Chapter">
+      <Accordion title="Chapter" expanded={expanded === 'chpt'} onToggle={() => toggle('chpt')} colors={colors}>
         <SettingRow
           label="Filter by chapter"
           toggle={active.searchChapter}
@@ -104,16 +132,15 @@ export default function SettingsScreen() {
           label="Chapter Range"
           low={active.lowChpt}
           high={active.highChpt}
-          min={1}
-          max={99}
+          min={4}
+          max={36}
           onLowChange={(val) => setSessionOverride({ lowChpt: Math.round(val) })}
           onHighChange={(val) => setSessionOverride({ highChpt: Math.round(val) })}
           enabled={active.searchChapter}
         />
-      </Section>
+      </Accordion>
 
-      {/* Frequency Filter */}
-      <Section title="Frequency">
+      <Accordion title="Frequency" expanded={expanded === 'freq'} onToggle={() => toggle('freq')} colors={colors}>
         <SettingRow
           label="Filter by frequency"
           toggle={active.searchFrequency}
@@ -124,16 +151,15 @@ export default function SettingsScreen() {
           low={active.lowFreq}
           high={active.highFreq}
           min={1}
-          max={99999}
+          max={20000}
           step={10}
           onLowChange={(val) => setSessionOverride({ lowFreq: Math.round(val) })}
           onHighChange={(val) => setSessionOverride({ highFreq: Math.round(val) })}
           enabled={active.searchFrequency}
         />
-      </Section>
+      </Accordion>
 
-      {/* Word Type Filter */}
-      <Section title="Word Types">
+      <Accordion title="Word Types" expanded={expanded === 'types'} onToggle={() => toggle('types')} colors={colors}>
         <SettingRow
           label="Filter by type"
           toggle={active.searchType}
@@ -144,10 +170,9 @@ export default function SettingsScreen() {
           onToggle={handleTypeToggle}
           enabled={active.searchType}
         />
-      </Section>
+      </Accordion>
 
-      {/* Display */}
-      <Section title="Display">
+      <Accordion title="Display" expanded={expanded === 'display'} onToggle={() => toggle('display')} colors={colors}>
         <RangeDisplay
           label="Greek Font Size"
           low={active.sizeOfForeign}
@@ -168,10 +193,9 @@ export default function SettingsScreen() {
           onLowChange={(val) => setSessionOverride({ sizeOfMeaning: Math.round(val) })}
           onHighChange={(val) => setSessionOverride({ sizeOfMeaning: Math.round(val) })}
         />
-      </Section>
+      </Accordion>
 
-      {/* Auto Mode */}
-      <Section title="Auto Mode">
+      <Accordion title="Auto Mode" expanded={expanded === 'auto'} onToggle={() => toggle('auto')} colors={colors}>
         <RangeDisplay
           label="Seconds per card"
           low={active.seconds}
@@ -181,7 +205,7 @@ export default function SettingsScreen() {
           onLowChange={(val) => setSessionOverride({ seconds: Math.round(val) })}
           onHighChange={(val) => setSessionOverride({ seconds: Math.round(val) })}
         />
-      </Section>
+      </Accordion>
 
       {/* Save Button */}
       <Pressable
@@ -192,37 +216,52 @@ export default function SettingsScreen() {
           Save Preferences
         </Text>
       </Pressable>
-
-      <View style={{ height: spacing['5xl'] }} />
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  content: { padding: spacing.lg },
+  container: { flex: 1, padding: spacing.md },
   banner: {
-    padding: spacing.md,
+    padding: spacing.sm,
     borderRadius: borderRadius.md,
     alignItems: 'center',
-    marginBottom: spacing.xl,
+    marginBottom: spacing.sm,
   },
-  bannerText: { color: '#fff', fontSize: 16 },
+  bannerText: { color: '#fff', fontSize: 15 },
   sessionBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: spacing.md,
+    padding: spacing.sm,
     borderRadius: borderRadius.md,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
   },
-  sessionText: { fontSize: 14 },
-  sessionReset: { fontSize: 14 },
+  sessionText: { fontSize: 13 },
+  sessionReset: { fontSize: 13 },
+  accordion: {
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.xs,
+    overflow: 'hidden',
+  },
+  accordionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  accordionTitle: { fontSize: 15 },
+  accordionBody: {
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.sm,
+  },
   saveBtn: {
-    padding: spacing.lg,
+    padding: spacing.sm,
     borderRadius: borderRadius.md,
     alignItems: 'center',
-    marginTop: spacing.lg,
+    marginTop: spacing.xs,
   },
-  saveBtnText: { color: '#fff', fontSize: 16 },
+  saveBtnText: { color: '#fff', fontSize: 15 },
 });

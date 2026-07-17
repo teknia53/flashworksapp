@@ -14,7 +14,7 @@ export function GreekText({ text, baseFontSize = 48 }: GreekTextProps) {
   return (
     <View style={styles.container} onLayout={onLayout}>
       <Text
-        style={[styles.text, { fontSize, color: colors.greekText, fontFamily: 'GentiumPlus' }]}
+        style={[styles.text, { fontSize, color: colors.greekText, fontFamily: 'Times New Roman' }]}
         numberOfLines={2}
         adjustsFontSizeToFit
       >

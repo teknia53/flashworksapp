@@ -27,7 +27,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="study"
         options={{
-          title: 'Study',
+          title: 'Basics of Biblical Greek',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="school" size={size} color={color} />
           ),
