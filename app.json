@@ -51,10 +51,10 @@
       "policy": "appVersion"
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "f55a7792-797f-4ce9-a0bf-ea7245e28526"
-      },
-      "router": {}
+        "projectId": "530729b0-6cf1-48ca-9526-2575734ac2fd"
+      }
     },
     "owner": "billmounce"
   }

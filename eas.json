@@ -23,5 +23,14 @@
         "simulator": false
       }
     }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "teknia@mac.com",
+        "ascAppId": "6792080725",
+        "appleTeamId": "G3G3GEQKU6"
+      }
+    }
   }
 }
