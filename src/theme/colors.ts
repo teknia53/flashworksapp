@@ -2,6 +2,7 @@ export const palette = {
   brown: '#0067AC',       // Teknia blue — primary actions, headers
   brownDark: '#004F85',   // Darker blue — text, app icon background
   brownDeep: '#00223A',   // Deep navy — dark mode background
+  teal: '#00838F',        // Teal — accent that harmonizes with Teknia blue
   gold: '#C4941A',        // Warm gold — accent highlights
   goldLight: '#F0D47A',   // Light gold — Greek text in dark mode
   parchment: '#E8D5B5',   // Parchment — warm surface tint
@@ -25,7 +26,7 @@ export const lightColors = {
   surfaceElevated: palette.white,
   primary: palette.brown,
   primaryText: palette.white,
-  accent: palette.gold,
+  accent: palette.teal,
   text: palette.brownDark,
   textSecondary: palette.gray500,
   textMuted: palette.gray400,

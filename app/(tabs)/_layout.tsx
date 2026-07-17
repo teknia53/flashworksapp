@@ -28,6 +28,7 @@ export default function TabLayout() {
         name="study"
         options={{
           title: 'Basics of Biblical Greek',
+          tabBarLabel: 'Study',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="school" size={size} color={color} />
           ),
