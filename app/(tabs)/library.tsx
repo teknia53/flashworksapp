@@ -161,14 +161,7 @@ export default function LibraryScreen() {
         <Text style={[styles.count, { color: colors.textSecondary, fontFamily: 'Inter' }]}>
           {words.length} words
         </Text>
-        <View style={styles.infoActions}>
-          <Pressable style={styles.iconBtn} onPress={handleImport}>
-            <Ionicons name="download" size={22} color={colors.primary} />
-          </Pressable>
-          <Pressable style={styles.iconBtn} onPress={handleExport}>
-            <Ionicons name="share" size={22} color={colors.primary} />
-          </Pressable>
-        </View>
+        {/* Import/export buttons hidden for now; handleImport/handleExport remain wired below */}
       </View>
 
       {/* Word list */}
