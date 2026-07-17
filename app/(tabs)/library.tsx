@@ -14,10 +14,11 @@ import { WordForm } from '@/src/components/library/WordForm';
 import type { FlashWord } from '@/src/db/types';
 import { parseTabDelimited } from '@/src/utils/importParser';
 import { formatTabDelimited } from '@/src/utils/exportFormatter';
+import { convertGreekTyping, normalizeGreek } from '@/src/utils/greekInput';
 
 export default function LibraryScreen() {
   const { colors } = useTheme();
-  const { isReady, getAllWords, searchWords, addWord, updateWord, deleteWord } = useDatabase();
+  const { isReady, getAllWords, addWord, updateWord, deleteWord } = useDatabase();
   const [words, setWords] = useState<FlashWord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedWord, setSelectedWord] = useState<FlashWord | null>(null);
@@ -26,11 +27,24 @@ export default function LibraryScreen() {
 
   const loadWords = useCallback(async () => {
     if (!isReady) return;
-    const result = searchQuery.trim()
-      ? await searchWords(searchQuery.trim())
-      : await getAllWords();
-    setWords(result);
-  }, [isReady, searchQuery, getAllWords, searchWords]);
+    const all = await getAllWords();
+    const query = searchQuery.trim();
+    if (!query) {
+      setWords(all);
+      return;
+    }
+    // Match typed text against English meanings, and its Greek conversion
+    // (legacy font keystrokes like "lovgoV") against Greek words, ignoring accents.
+    const qLower = query.toLowerCase();
+    const qGreek = normalizeGreek(convertGreekTyping(query));
+    setWords(
+      all.filter(
+        (w) =>
+          w.dbMeaning.toLowerCase().includes(qLower) ||
+          normalizeGreek(w.dbWord).includes(qGreek)
+      )
+    );
+  }, [isReady, searchQuery, getAllWords]);
 
   useEffect(() => {
     loadWords();
@@ -135,6 +149,9 @@ export default function LibraryScreen() {
             value={searchQuery}
             onChangeText={setSearchQuery}
             clearButtonMode="while-editing"
+            autoCapitalize="none"
+            autoCorrect={false}
+            spellCheck={false}
           />
         </View>
       </View>

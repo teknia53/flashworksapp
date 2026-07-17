@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useTheme, spacing, borderRadius } from '@/src/theme';
+import { convertGreekTyping } from '@/src/utils/greekInput';
 import type { FlashWord, WordType } from '@/src/db/types';
 import { WORD_TYPE_LABELS, ALL_WORD_TYPES } from '@/src/db/types';
 
@@ -59,9 +60,12 @@ export function WordForm({ initialWord, onSave, onDelete, onCancel }: WordFormPr
       <TextInput
         style={[inputStyle, { fontFamily: 'Times New Roman', fontSize: 22 }]}
         value={word}
-        onChangeText={setWord}
+        onChangeText={(t) => setWord(convertGreekTyping(t))}
         placeholder="Enter Greek word"
         placeholderTextColor={colors.textMuted}
+        autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
       />
 
       <Text style={[styles.label, { color: colors.textSecondary, fontFamily: 'Inter-Medium' }]}>
@@ -82,9 +86,12 @@ export function WordForm({ initialWord, onSave, onDelete, onCancel }: WordFormPr
       <TextInput
         style={[inputStyle, { fontFamily: 'Times New Roman' }]}
         value={principalParts}
-        onChangeText={setPrincipalParts}
+        onChangeText={(t) => setPrincipalParts(convertGreekTyping(t))}
         placeholder="Optional"
         placeholderTextColor={colors.textMuted}
+        autoCapitalize="none"
+        autoCorrect={false}
+        spellCheck={false}
       />
 
       <View style={styles.row}>
