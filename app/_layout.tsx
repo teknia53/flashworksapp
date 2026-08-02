@@ -13,9 +13,9 @@ export { ErrorBoundary } from 'expo-router';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  // Greek renders in Times New Roman (see src/theme/typography.ts) — no Greek
+  // face is bundled, so only the UI font is loaded here.
   const [loaded, error] = useFonts({
-    'GentiumPlus': require('../assets/fonts/GentiumPlus-Regular.ttf'),
-    'GentiumPlus-Bold': require('../assets/fonts/GentiumPlus-Bold.ttf'),
     'Inter': require('../assets/fonts/Inter-Regular.ttf'),
     'Inter-Medium': require('../assets/fonts/Inter-Medium.ttf'),
     'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
