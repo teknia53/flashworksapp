@@ -60,7 +60,7 @@ Add your own words, edit any entry, or delete what you don't need. Import word l
 
 BUILT FOR READING GREEK
 
-Greek text is set in GentiumPlus, a typeface designed for polytonic Greek, with adjustable text sizes for both the Greek and the English. Full dark mode support for late-night study.
+Greek is set in a classic serif face that renders accents and breathing marks cleanly, and you can size the Greek and the English independently until both read comfortably. Full dark mode support for late-night study.
 
 Everything stays on your device. FlashWorks collects nothing.
 ```
@@ -210,3 +210,15 @@ Ordered by what will stop the submission first.
   centered column with the bottom half of a 13" iPad blank. The Library screen
   uses the space well; the others do not. Not a rejection risk in practice, but
   the iPad screenshots look noticeably sparser than the iPhone ones.
+- **GentiumPlus is bundled but never used.** `app/_layout.tsx` loads
+  `GentiumPlus-Regular.ttf` and `GentiumPlus-Bold.ttf`, but nothing references
+  those families. Every Greek-rendering component hardcodes
+  `fontFamily: 'Times New Roman'` — `GreekText.tsx`, `WordRow.tsx`,
+  `ErrorListItem.tsx`, `WordForm.tsx` — and the `fontFamilies.greek` token in
+  `src/theme/typography.ts` has no consumers at all. So the app ships ~1.7 MB of
+  font it never draws with. Two ways out: point the Greek components at
+  `'GentiumPlus'` (it is the better face for polytonic Greek), or drop the two
+  .ttf files and the `useFonts` entries. Either is fine; shipping both fonts and
+  using neither deliberately is the only bad option.
+  **The listing copy no longer names a typeface**, so it stays accurate whichever
+  way this is resolved.
