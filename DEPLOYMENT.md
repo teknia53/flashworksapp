@@ -151,29 +151,32 @@ EAS handles code signing and provisioning profiles automatically. It will prompt
 
 ### Required Before Submission
 
-- [ ] **App Icon**: 1024x1024 (already done — `assets/images/icon.png`)
-- [ ] **Screenshots**: Capture on iPhone 6.7" (iPhone 15 Pro Max) and 5.5" (iPhone SE)
-  - Minimum 3 screenshots per size
-  - Show: Study screen, Library, Stats, Settings
-- [ ] **App Description**: Write for App Store listing
-- [ ] **Privacy Policy URL**: Required even for offline apps. Can be a simple page stating "FlashWorks does not collect any data."
-- [ ] **Age Rating**: 4+ (no objectionable content)
-- [ ] **Privacy**: Select "Data Not Collected" in App Store Connect
+Listing copy, keywords, review notes, and the full remaining-blockers list live in
+[`store-listing.md`](./store-listing.md). This is the short checklist.
 
-### Recommended App Store Description
+- [x] **App Icon**: 1024x1024, alpha flattened by prebuild (`assets/images/icon.png`)
+- [x] **Screenshots**: captured in `store-assets/screenshots/`
+  - iPhone 6.9" — 1320 × 2868, 6 shots
+  - iPad 13" — 2064 × 2752, 4 shots (required: the target is iPhone + iPad)
+  - Shows: Study home, flashcard front/back, Stats, Settings filters, Library
+- [x] **App Description**: written — see `store-listing.md`
+- [x] **Age Rating**: 4+ (no objectionable content)
+- [x] **Privacy**: "Data Not Collected" — the app has no network calls or analytics
+- [ ] **Privacy Policy URL**: still needed. Required even for offline apps. A simple
+      page stating "FlashWorks does not collect any data" is enough.
+- [ ] **Support URL**: still needed.
+- [ ] **Production build + upload**: `eas build --profile production --platform ios`,
+      then `eas submit --platform ios`.
 
-```
-FlashWorks helps you master Biblical Greek vocabulary with smart flashcards.
+> Screenshot sizes: Apple's current required set is 6.9" iPhone and 13" iPad.
+> The 6.7"/5.5" sizes this checklist used to name are no longer what App Store
+> Connect asks for.
 
-• 1,127 Greek vocabulary words from Mounce's Basics of Biblical Greek
-• Smart difficulty adjustment — cards adapt to your knowledge level
-• Manual and auto study modes
-• Filter by difficulty, chapter, frequency, and word type
-• Track your accuracy and drill missed words
-• Import and export custom word lists
-• Beautiful dark mode support
-• Fully offline — no account or internet required
-```
+### App Store Description
+
+Moved to [`store-listing.md`](./store-listing.md), which holds the final copy
+along with the subtitle, promotional text, and keywords, each checked against
+App Store Connect's character limits.
 
 ### Review Notes for Apple
 

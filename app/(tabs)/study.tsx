@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { View, Text, Pressable, StyleSheet, SafeAreaView, useWindowDimensions, Image } from 'react-native';
+import { View, Text, Pressable, StyleSheet, SafeAreaView, useWindowDimensions, Image, Animated, Easing } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, spacing, borderRadius } from '@/src/theme';
@@ -117,6 +117,20 @@ export default function StudyScreen() {
     answerWrong();
   }, [answerWrong, haptics]);
 
+  // Shuffle feedback: haptic tap + a wipe sweeping across the button
+  const shuffleWipe = useRef(new Animated.Value(0)).current;
+  const handleShuffle = useCallback(() => {
+    haptics.tap();
+    shuffleDeck();
+    shuffleWipe.setValue(0);
+    Animated.timing(shuffleWipe, {
+      toValue: 1,
+      duration: 500,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [haptics, shuffleDeck, shuffleWipe]);
+
   // ─── Idle state ─────────────────────────────────────────────
   if (state.mode === 'idle') {
     return (
@@ -165,9 +179,30 @@ export default function StudyScreen() {
                 </Text>
               </Pressable>
               <Pressable
-                style={[styles.secondaryBtn, { borderColor: colors.primary }]}
-                onPress={shuffleDeck}
+                style={[styles.secondaryBtn, styles.shuffleBtn, { borderColor: colors.primary }]}
+                onPress={handleShuffle}
               >
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    StyleSheet.absoluteFill,
+                    {
+                      backgroundColor: colors.primary,
+                      opacity: shuffleWipe.interpolate({
+                        inputRange: [0, 0.1, 0.9, 1],
+                        outputRange: [0, 0.25, 0.25, 0],
+                      }),
+                      transform: [
+                        {
+                          translateX: shuffleWipe.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [-240, 240],
+                          }),
+                        },
+                      ],
+                    },
+                  ]}
+                />
                 <Ionicons name="shuffle" size={20} color={colors.primary} />
                 <Text style={[styles.secondaryBtnText, { color: colors.primary, fontFamily: 'Inter-Medium' }]}>
                   Shuffle
@@ -528,6 +563,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   secondaryBtnText: { fontSize: 16 },
+  shuffleBtn: { overflow: 'hidden' },
   // Complete
   completeContent: {
     flex: 1,
