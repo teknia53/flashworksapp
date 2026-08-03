@@ -1,16 +1,12 @@
-import { Platform } from 'react-native';
-
+// Greek is set in Tinos, bundled in assets/fonts/. Tinos is metrically
+// compatible with Times New Roman and carries full polytonic coverage, so Greek
+// renders identically on iOS and Android instead of falling back to whatever
+// serif each platform happens to ship. Loaded in app/_layout.tsx.
 export const fontFamilies = {
-  greek: Platform.select({
-    ios: 'Times New Roman',
-    android: 'serif',
-    default: 'Times New Roman',
-  }),
-  greekBold: Platform.select({
-    ios: 'Times New Roman',
-    android: 'serif',
-    default: 'Times New Roman',
-  }),
+  greek: 'Tinos',
+  // No bold face is bundled — this resolves to regular Tinos. Add
+  // Tinos-Bold.ttf and load it in app/_layout.tsx if real bold Greek is needed.
+  greekBold: 'Tinos',
   ui: 'Inter',
   uiMedium: 'Inter-Medium',
   uiBold: 'Inter-Bold',

@@ -13,10 +13,11 @@ export { ErrorBoundary } from 'expo-router';
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  // Greek uses a platform font, not a bundled one — Times New Roman on iOS,
-  // the system serif on Android. See fontFamilies.greek in src/theme/typography.ts.
-  // Only the UI font is loaded here.
+  // Tinos is the Greek face (Times-metric-compatible, full polytonic coverage);
+  // Inter is the UI face. Bundling Greek rather than using a platform font keeps
+  // iOS and Android rendering identical. See src/theme/typography.ts.
   const [loaded, error] = useFonts({
+    'Tinos': require('../assets/fonts/Tinos-Regular.ttf'),
     'Inter': require('../assets/fonts/Inter-Regular.ttf'),
     'Inter-Medium': require('../assets/fonts/Inter-Medium.ttf'),
     'Inter-Bold': require('../assets/fonts/Inter-Bold.ttf'),
