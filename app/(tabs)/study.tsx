@@ -74,7 +74,7 @@ export default function StudyScreen() {
   }, [reveal, haptics]);
 
   const { remaining: autoRemaining } = useAutoTimer({
-    seconds: active?.seconds ?? 5,
+    seconds: active?.seconds ?? 3,
     isRunning: state.mode === 'auto' && !state.isComplete && state.cardFace === 'word',
     onTimeout: handleAutoTimeout,
   });
@@ -175,7 +175,7 @@ export default function StudyScreen() {
               >
                 <Ionicons name="timer" size={22} color="#fff" />
                 <Text style={[styles.startBtnText, { fontFamily: 'Inter-Bold' }]}>
-                  Auto ({active?.seconds ?? 5}s)
+                  Auto ({active?.seconds ?? 3}s)
                 </Text>
               </Pressable>
               <Pressable
@@ -353,7 +353,7 @@ export default function StudyScreen() {
         {/* Auto timer bar — only shows while counting down to reveal */}
         {state.mode === 'auto' && state.cardFace === 'word' && (
           <View style={styles.autoTimerContainer}>
-            <AutoTimerBar remaining={autoRemaining} total={active?.seconds ?? 5} />
+            <AutoTimerBar remaining={autoRemaining} total={active?.seconds ?? 3} />
           </View>
         )}
 
@@ -362,9 +362,13 @@ export default function StudyScreen() {
             {/* Card with swipe */}
             <View style={styles.cardContainer}>
               <SwipeableCard
-                onSwipeRight={handleRight}
-                onSwipeLeft={handleWrong}
-                enabled={state.cardFace === 'meaning'}
+                // While the Greek is showing, a swipe either way just reveals the
+                // meaning — same as tapping the card or the Reveal button. You can
+                // only mark yourself right or wrong once you've seen the answer.
+                // Auto mode keeps swipes disabled until its timer reveals the card.
+                onSwipeRight={state.cardFace === 'word' ? handleReveal : handleRight}
+                onSwipeLeft={state.cardFace === 'word' ? handleReveal : handleWrong}
+                enabled={state.cardFace === 'meaning' || state.mode === 'manual'}
               >
                 {currentWord && (
                   <FlashCard

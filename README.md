@@ -101,7 +101,7 @@ FlashWorksApp/
 - Filter by difficulty (1-5), chapter, frequency, word type
 - Font size controls (Greek and meaning text)
 - Auto-difficulty toggle
-- Auto mode timer (default 5 seconds)
+- Auto mode timer (default 3 seconds)
 
 ## Core Business Logic
 
