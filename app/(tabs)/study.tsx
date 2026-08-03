@@ -166,7 +166,7 @@ export default function StudyScreen() {
               <Image
                 source={
                   isTablet
-                    ? require('@/assets/images/professor-large.png')
+                    ? require('@/assets/images/professor.png')
                     : require('@/assets/images/splash-icon.png')
                 }
                 style={isTablet ? styles.professorLandscapeTablet : styles.professorLandscape}
@@ -256,7 +256,7 @@ export default function StudyScreen() {
             <Image
               source={
                 isTablet
-                  ? require('@/assets/images/professor-large.png')
+                  ? require('@/assets/images/professor.png')
                   : require('@/assets/images/splash-icon.png')
               }
               style={isTablet ? styles.professorTablet : styles.professor}
@@ -565,7 +565,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
   },
   // Twice the phone's rendered figure (~92x168pt inside the padded 225 box).
-  // Dimensions match professor-large.png's 0.545 aspect so nothing is letterboxed.
+  // Dimensions match professor.png's 0.545 aspect so nothing is letterboxed.
   professorTablet: {
     width: 183,
     height: 336,
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
     height: 165,
   },
   // ~3x the phone-landscape figure (which is ~67x123pt inside the padded 165 box).
-  // Aspect matches professor-large.png (0.545) so nothing is letterboxed.
+  // Aspect matches professor.png (0.545) so nothing is letterboxed.
   professorLandscapeTablet: {
     width: 201,
     height: 369,
