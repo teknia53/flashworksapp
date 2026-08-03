@@ -24,6 +24,11 @@ export default function StudyScreen() {
   const { colors } = useTheme();
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height;
+  // Tablet check by shortest edge rather than Platform.isPad, so Android
+  // tablets get the same treatment when that build happens. 700 sits well
+  // above the widest iPhone (~440pt) and below the iPad mini (744pt) — the
+  // classic 768 breakpoint would wrongly treat a mini as a phone.
+  const isTablet = Math.min(width, height) >= 700;
   const { isReady } = useDatabase();
   const { active } = usePreferences();
   const haptics = useHaptics();
@@ -234,9 +239,17 @@ export default function StudyScreen() {
           )}
 
           {!isLandscape && (
+            // Tablets get the professor at twice the size, drawn from a
+            // higher-resolution, tightly-cropped source so it stays sharp —
+            // splash-icon.png is padded and only 512px, which would go soft
+            // at this scale. Phones keep the original artwork and size.
             <Image
-              source={require('@/assets/images/splash-icon.png')}
-              style={styles.professor}
+              source={
+                isTablet
+                  ? require('@/assets/images/professor-large.png')
+                  : require('@/assets/images/splash-icon.png')
+              }
+              style={isTablet ? styles.professorTablet : styles.professor}
               resizeMode="contain"
             />
           )}
@@ -536,6 +549,13 @@ const styles = StyleSheet.create({
   professor: {
     width: 225,
     height: 225,
+    marginTop: spacing.xl,
+  },
+  // Twice the phone's rendered figure (~92x168pt inside the padded 225 box).
+  // Dimensions match professor-large.png's 0.545 aspect so nothing is letterboxed.
+  professorTablet: {
+    width: 183,
+    height: 336,
     marginTop: spacing.xl,
   },
   professorLandscape: {
