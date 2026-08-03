@@ -143,7 +143,13 @@ export default function StudyScreen() {
         <View style={[styles.idleContent, isLandscape && styles.idleContentLandscape]}>
           <View style={styles.idleTextBlock}>
             <Text
-              style={[styles.title, { color: colors.text, fontFamily: 'Inter-Bold' }]}
+              style={[
+                styles.title,
+                // adjustsFontSizeToFit means the 240pt width, not fontSize, is what
+                // caps the rendered size — so the wider box is what actually enlarges it.
+                isTablet && isLandscape && styles.titleTabletLandscape,
+                { color: colors.text, fontFamily: 'Inter-Bold' },
+              ]}
               numberOfLines={1}
               adjustsFontSizeToFit
             >
@@ -158,8 +164,12 @@ export default function StudyScreen() {
             </Text>
             {isLandscape && (
               <Image
-                source={require('@/assets/images/splash-icon.png')}
-                style={styles.professorLandscape}
+                source={
+                  isTablet
+                    ? require('@/assets/images/professor-large.png')
+                    : require('@/assets/images/splash-icon.png')
+                }
+                style={isTablet ? styles.professorLandscapeTablet : styles.professorLandscape}
                 resizeMode="contain"
               />
             )}
@@ -545,6 +555,9 @@ const styles = StyleSheet.create({
   },
   idleTextBlock: { alignItems: 'center' },
   title: { fontSize: 60, width: 240, textAlign: 'center', marginBottom: spacing.sm },
+  // Half again as wide as the 240pt default (1.58x), with fontSize raised to match
+  // so adjustsFontSizeToFit doesn't shrink it back down to the old size.
+  titleTabletLandscape: { fontSize: 96, width: 380 },
   subtitle: { fontSize: 18, marginTop: spacing.sm, marginBottom: spacing['3xl'] },
   professor: {
     width: 225,
@@ -556,11 +569,17 @@ const styles = StyleSheet.create({
   professorTablet: {
     width: 183,
     height: 336,
-    marginTop: spacing.xl,
+    marginTop: spacing['6xl'],
   },
   professorLandscape: {
     width: 165,
     height: 165,
+  },
+  // ~3x the phone-landscape figure (which is ~67x123pt inside the padded 165 box).
+  // Aspect matches professor-large.png (0.545) so nothing is letterboxed.
+  professorLandscapeTablet: {
+    width: 201,
+    height: 369,
   },
   buttonGroup: {
     alignItems: 'center',
