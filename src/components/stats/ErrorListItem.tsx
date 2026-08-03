@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme, spacing } from '@/src/theme';
+import { useTheme, spacing, fontFamilies } from '@/src/theme';
 
 interface ErrorListItemProps {
   word: string;
@@ -17,7 +17,7 @@ export function ErrorListItem({ word, meaning, index }: ErrorListItemProps) {
       </Text>
       <View style={styles.textContainer}>
         <Text
-          style={[styles.word, { color: colors.greekText, fontFamily: 'Times New Roman' }]}
+          style={[styles.word, { color: colors.greekText, fontFamily: fontFamilies.greek }]}
           numberOfLines={1}
         >
           {word}

@@ -1,6 +1,6 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme, spacing } from '@/src/theme';
+import { useTheme, spacing, fontFamilies } from '@/src/theme';
 import type { FlashWord } from '@/src/db/types';
 import { WORD_TYPE_LABELS } from '@/src/db/types';
 
@@ -16,7 +16,7 @@ export function WordRow({ word, onPress }: WordRowProps) {
     <Pressable onPress={onPress} style={[styles.row, { borderBottomColor: colors.border }]}>
       <View style={styles.left}>
         <Text
-          style={[styles.greek, { color: colors.greekText, fontFamily: 'Times New Roman' }]}
+          style={[styles.greek, { color: colors.greekText, fontFamily: fontFamilies.greek }]}
           numberOfLines={1}
         >
           {word.dbWord}

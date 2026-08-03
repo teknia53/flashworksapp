@@ -1,5 +1,5 @@
 import { Text, View, StyleSheet } from 'react-native';
-import { useTheme } from '@/src/theme';
+import { useTheme, fontFamilies } from '@/src/theme';
 import { useDynamicFontSize } from '@/src/hooks/useDynamicFontSize';
 
 interface GreekTextProps {
@@ -14,7 +14,7 @@ export function GreekText({ text, baseFontSize = 48 }: GreekTextProps) {
   return (
     <View style={styles.container} onLayout={onLayout}>
       <Text
-        style={[styles.text, { fontSize, color: colors.greekText, fontFamily: 'Times New Roman' }]}
+        style={[styles.text, { fontSize, color: colors.greekText, fontFamily: fontFamilies.greek }]}
         numberOfLines={2}
         adjustsFontSizeToFit
       >
