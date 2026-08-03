@@ -40,7 +40,7 @@ FlashWorksApp/
 │       └── settings.tsx          # Preferences & filters
 ├── assets/
 │   ├── databases/FlashWorks.sqlite  # Bundled vocabulary database (1,127 words)
-│   ├── fonts/                       # GentiumPlus (Greek), Inter (UI)
+│   ├── fonts/                       # Tinos (Greek), Inter (UI)
 │   └── images/                      # App icon, splash, professor character
 ├── src/
 │   ├── db/
@@ -67,7 +67,7 @@ FlashWorksApp/
 │   │   ├── importParser.ts       # Tab-delimited text → words
 │   │   └── exportFormatter.ts    # Words → tab-delimited text
 │   └── theme/
-│       ├── colors.ts             # Warm brown/gold palette (light + dark)
+│       ├── colors.ts             # Teknia blue palette (light + dark)
 │       ├── typography.ts         # Font families
 │       ├── spacing.ts            # Spacing tokens
 │       └── useTheme.ts           # Theme hook
@@ -131,10 +131,14 @@ npm test
 
 ## Brand
 
-- **Colors**: Warm brown `#4A2E1F` + gold `#C4941A` on parchment `#FAF7F2`
-- **Greek font**: GentiumPlus (professional Biblical Greek)
+- **Colors**: Teknia blue `#0067AC` with a teal `#00838F` accent on white, text in
+  the darker blue `#004F85`. Dark mode swaps to a deep navy `#00223A` ground with
+  gold `#C4941A` / `#F0D47A` for primary and Greek text. See `src/theme/colors.ts`.
+- **Greek font**: Tinos, bundled in `assets/fonts/`. Metrically compatible with
+  Times New Roman and carrying full polytonic coverage, so iOS and Android render
+  identically rather than falling back to each platform's own serif.
 - **UI font**: Inter
-- **Icon**: Professor character on dark brown background
+- **Icon**: Professor character on white, inside a thin brown rounded border
 
 ## EAS Build Profiles
 
