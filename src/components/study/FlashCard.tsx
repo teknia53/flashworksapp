@@ -20,6 +20,8 @@ interface FlashCardProps {
   greekFontSize?: number;
   meaningFontSize?: number;
   minHeight?: number;
+  /** See GreekText — pass false when the caller has sized for the worst-case word. */
+  autoShrinkGreek?: boolean;
 }
 
 export function FlashCard({
@@ -29,6 +31,7 @@ export function FlashCard({
   greekFontSize = 48,
   meaningFontSize = 24,
   minHeight = 300,
+  autoShrinkGreek = true,
 }: FlashCardProps) {
   const { colors } = useTheme();
   const flipProgress = useSharedValue(0);
@@ -67,7 +70,7 @@ export function FlashCard({
         ]}
       >
         <View style={styles.content}>
-          <GreekText text={word.dbWord} baseFontSize={greekFontSize} />
+          <GreekText text={word.dbWord} baseFontSize={greekFontSize} autoShrink={autoShrinkGreek} />
         </View>
       </Animated.View>
 
@@ -81,7 +84,11 @@ export function FlashCard({
         ]}
       >
         <View style={styles.content}>
-          <GreekText text={word.dbWord} baseFontSize={Math.floor(greekFontSize * 0.85)} />
+          <GreekText
+            text={word.dbWord}
+            baseFontSize={Math.floor(greekFontSize * 0.85)}
+            autoShrink={autoShrinkGreek}
+          />
           <View style={styles.divider} />
           <MeaningText text={word.dbMeaning} fontSize={meaningFontSize} />
           {word.dbPrincipalParts ? (

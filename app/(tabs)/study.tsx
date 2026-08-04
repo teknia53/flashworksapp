@@ -13,6 +13,23 @@ import { StudyControls } from '@/src/components/study/StudyControls';
 import { SwipeableCard } from '@/src/components/study/SwipeableCard';
 import { AutoTimerBar } from '@/src/components/study/AutoTimer';
 
+// Tablet card typography. Sized against the widest entries actually in the
+// bundled database, measured in the real fonts rather than estimated:
+//
+//   Greek   'περισσότερος, –τέρα, –τερον' is the widest of all 1,127 words.
+//           In Tinos it needs 838pt at 72pt, against 920pt of usable width in
+//           iPad portrait (1032 screen − 32 container − 48 card − 32 text
+//           padding). Portrait is the tighter orientation, so the same size is
+//           reused in landscape, where 1054pt is available.
+//   Meaning The widest meaning needs 1,576pt at 44pt across up to 3 lines,
+//           well inside the 2,760pt those lines provide. Principal parts render
+//           at 0.7x and need 1,217pt, also comfortable.
+//
+// iOS adjustsFontSizeToFit remains the backstop for anything a user adds later.
+const TABLET_GREEK_SIZE = 72;
+const TABLET_MEANING_SIZE = 44;
+const TABLET_CARD_MIN_HEIGHT = 560;
+
 function formatTime(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
   const min = Math.floor(totalSec / 60);
@@ -398,9 +415,22 @@ export default function StudyScreen() {
                     word={currentWord}
                     face={state.cardFace}
                     onTap={state.cardFace === 'word' ? handleReveal : () => {}}
-                    greekFontSize={active?.sizeOfForeign ? Math.floor(active.sizeOfForeign / (isLandscape ? 1.7 : 2.5)) : isLandscape ? 70 : 48}
-                    meaningFontSize={active?.sizeOfMeaning ? Math.floor(active.sizeOfMeaning / (isLandscape ? 1.9 : 2.5)) : isLandscape ? 32 : 24}
-                    minHeight={isLandscape ? 210 : 300}
+                    greekFontSize={
+                      isTablet
+                        ? TABLET_GREEK_SIZE
+                        : active?.sizeOfForeign
+                          ? Math.floor(active.sizeOfForeign / (isLandscape ? 1.7 : 2.5))
+                          : isLandscape ? 70 : 48
+                    }
+                    meaningFontSize={
+                      isTablet
+                        ? TABLET_MEANING_SIZE
+                        : active?.sizeOfMeaning
+                          ? Math.floor(active.sizeOfMeaning / (isLandscape ? 1.9 : 2.5))
+                          : isLandscape ? 32 : 24
+                    }
+                    minHeight={isTablet ? TABLET_CARD_MIN_HEIGHT : isLandscape ? 210 : 300}
+                    autoShrinkGreek={!isTablet}
                   />
                 )}
               </SwipeableCard>
