@@ -10,12 +10,28 @@ interface StudyControlsProps {
   onWrong: () => void;
   /** Stack buttons vertically (landscape side column) */
   vertical?: boolean;
+  /**
+   * Centre a fixed-width row rather than stretching to fill. On a 1376pt-wide
+   * iPad in landscape, flex:1 buttons would each end up ~660pt across.
+   */
+  centered?: boolean;
 }
 
-export function StudyControls({ cardFace, onReveal, onRight, onWrong, vertical = false }: StudyControlsProps) {
+export function StudyControls({
+  cardFace,
+  onReveal,
+  onRight,
+  onWrong,
+  vertical = false,
+  centered = false,
+}: StudyControlsProps) {
   const { colors } = useTheme();
-  const containerStyle = vertical ? styles.containerVertical : styles.container;
-  const btnFlex = vertical ? undefined : styles.btnFlex;
+  const containerStyle = vertical
+    ? styles.containerVertical
+    : centered
+      ? styles.containerCentered
+      : styles.container;
+  const btnFlex = vertical ? undefined : centered ? styles.btnFixed : styles.btnFlex;
 
   if (cardFace === 'word') {
     return (
@@ -63,6 +79,14 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     alignSelf: 'stretch',
   },
+  containerCentered: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
   btn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -72,5 +96,6 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
   },
   btnFlex: { flex: 1 },
+  btnFixed: { width: 280 },
   btnText: { color: '#fff', fontSize: 18 },
 });

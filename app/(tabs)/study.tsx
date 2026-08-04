@@ -397,7 +397,13 @@ export default function StudyScreen() {
           </View>
         )}
 
-        <View style={[styles.body, isLandscape && styles.bodyLandscape]}>
+        {/*
+          Phones in landscape keep the side-column layout — there is no vertical
+          room for controls beneath the card. Tablets in landscape stay a single
+          column so the card spans the full width, giving the Greek and its
+          definition the whole screen instead of sharing it with a 210pt column.
+        */}
+        <View style={[styles.body, isLandscape && !isTablet && styles.bodyLandscape]}>
           <View style={styles.cardColumn}>
             {/* Card with swipe */}
             <View style={styles.cardContainer}>
@@ -450,18 +456,20 @@ export default function StudyScreen() {
               </Text>
             )}
 
-            {/* Portrait: controls under the card */}
-            {!isLandscape && state.mode === 'manual' && (
+            {/* Controls under the card: portrait everywhere, plus tablet landscape */}
+            {(!isLandscape || isTablet) && state.mode === 'manual' && (
               <StudyControls
                 cardFace={state.cardFace}
+                centered={isTablet && isLandscape}
                 onReveal={handleReveal}
                 onRight={handleRight}
                 onWrong={handleWrong}
               />
             )}
-            {!isLandscape && state.mode === 'auto' && state.cardFace === 'meaning' && (
+            {(!isLandscape || isTablet) && state.mode === 'auto' && state.cardFace === 'meaning' && (
               <StudyControls
                 cardFace="meaning"
+                centered={isTablet && isLandscape}
                 onReveal={handleReveal}
                 onRight={handleRight}
                 onWrong={handleWrong}
@@ -469,8 +477,8 @@ export default function StudyScreen() {
             )}
           </View>
 
-          {/* Landscape: controls stacked down the right side */}
-          {isLandscape && (
+          {/* Phone landscape only: controls stacked down the right side */}
+          {isLandscape && !isTablet && (
             <View style={styles.sideControls}>
               {state.mode === 'manual' && (
                 <StudyControls
